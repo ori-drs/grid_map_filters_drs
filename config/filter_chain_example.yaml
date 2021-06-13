@@ -1,0 +1,103 @@
+grid_map_filters:
+
+  - name: buffer_normalizer
+    type: gridMapFilters/BufferNormalizerFilter
+
+  # Inpainting
+  - name: inpainting
+    type: gridMapCv/InpaintFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_inpainted_original
+      radius: 0.1 # in m
+  
+  # Inpainting
+  - name: denoise_inpaint
+    type: gridMapFiltersDrs/DenoiseAndInpaintFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_inpainted
+      radius: 0.1 # in m
+      inpainting_type: ns # 'ns' or 'telea' allowed
+      pre_denoising: false # enables denoising before inpainting
+      denoising_radius: 0.15 # m
+      denoising_type: total_variation # 'total_variation', 'non_local', 'gaussian', and 'median' supported
+
+  # # GP Inpainting
+  # - name: gp_inpainting
+  #   type: gridMapFiltersDrs/GaussianProcessInpaintFilter
+  #   params:
+  #     input_layer: elevation
+  #     output_layer: elevation_gp_inpainted
+  #     subsample_skip: 20 # skips n cells to reduce computation
+  
+  # Fill nans
+  - name: fill_nans
+    type: gridMapFiltersDrs/NanFillerFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_no_nans
+      set_to: mean # min, max, fixed_value
+      value: 0.0 # ignored if not 'fixed_value'
+
+  # # Compute surface normals (slow method)
+  # - name: surface_normals
+  #   type: gridMapFilters/NormalVectorsFilter
+  #   params:
+  #     input_layer: elevation_inpainted
+  #     output_layers_prefix: normal_slow_
+  #     radius: 0.15
+  #     normal_vector_positive_axis: z
+  #     algorithm: raster
+
+  # Compute surface normals (fast)
+  # Default positive vector is z axis
+  - name: surface_normals_fast
+    type: gridMapFiltersDrs/FastNormalsVectorFilter
+    params:
+      input_layer: elevation_inpainted
+      output_layers_prefix: normal_
+      input_smoothing_radius: 0.15 # spatial gaussian filter (in meters)
+      normals_smoothing_radius: 0.1 # spatial median filter (in meters)
+  
+  # # Rotate surface normals.
+  # - name: rotate_surface_normals
+  #   type: gridMapFiltersDrs/ChangeNormalsFrameFilter
+  #   params:
+  #     input_layers_prefix: normal_
+  #     target_frame: base_link
+ 
+  # Compute slope from surface normal.
+  - name: slope
+    type: gridMapFilters/MathExpressionFilter
+    params:
+      output_layer: slope
+      expression: acos(normal_z)
+  
+  # Compute traversability as normalized weighted sum of slope and roughness.
+  - name: traversability
+    type: gridMapFilters/MathExpressionFilter
+    params:
+      output_layer: traversability
+      expression: (1.0 - (slope / 0.6))
+       
+  # Compute 2D Signed Distance Field
+  - name: sdf
+    type: gridMapFiltersDrs/SignedDistanceField2dFilter
+    params:
+      input_layer: traversability
+      output_layer: sdf
+      normalize_gradients: true
+      threshold: 0.5 # lower thresholds are more relaxed
+
+  # Geodesic distance field
+  - name: geodesic
+    type: gridMapFiltersDrs/GeodesicDistanceField2dFilter
+    params:
+      input_layer: traversability
+      output_layer: geodesic
+      normalize_gradients: true
+      attractor_topic: /goal #/move_base_simple/goal
+      filter_chain_update_service: /elevation_map_filter/force_update
+      threshold: 0.5 # Only applicable when using binarization
+      use_binarization: true

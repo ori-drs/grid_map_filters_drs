@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>grid_map_filters_drs</name>
+  <version>0.0.1</version>
+  <description>Grid map filters used by DRS.</description>
+  <license>TODO</license>
+  
+  <author email="matias@robots.ox.ac.uk">Matias Mattamala</author>
+  <maintainer email="matias@robots.ox.ac.uk">Matias Mattamala</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>filters</depend>
+  <depend>geometry_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>pcl_ros</depend>
+  <depend>pcl_conversions</depend>
+  <depend>grid_map_core</depend>
+  <depend>grid_map_filters</depend>
+  <depend>grid_map_cv</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>grid_map_ros</depend>
+  <depend>grid_map_visualization</depend>
+  <depend>message_generation</depend>
+  <depend>eigen_conversions</depend>
+  <depend>tf</depend>
+  <depend>tf_conversions</depend>
+  <!-- <depend>message_runtime</depend> -->
+
+  <export>
+    <filters plugin="${prefix}/filter_plugins.xml" />
+  </export>
+
+</package>

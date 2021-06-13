@@ -1,0 +1,39 @@
+<class_libraries>
+  <library path="lib/libgrid_map_filters_drs">
+    <class name="gridMapFiltersDrs/SignedDistanceField2dFilter" type="grid_map::SignedDistanceField2dFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Computes a 2D SDF from a layer using a given threshold
+      </description>
+    </class>
+    <class name="gridMapFiltersDrs/GeodesicDistanceField2dFilter" type="grid_map::GeodesicDistanceField2dFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Computes a Geodesic Distance field from a layer using a given threshold
+      </description>
+    </class>
+    <class name="gridMapFiltersDrs/NanFillerFilter" type="grid_map::NanFillerFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Fills NaN values using a fixed value or min/max
+      </description>
+    </class>
+    <class name="gridMapFiltersDrs/ChangeNormalsFrameFilter" type="grid_map::ChangeNormalsFrameFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Rotate the normals to match a different frame
+      </description>
+    </class>
+    <class name="gridMapFiltersDrs/FastNormalsVectorFilter" type="grid_map::FastNormalsVectorFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Computes the normals using image processing techniques
+      </description>
+    </class>
+    <class name="gridMapFiltersDrs/GaussianProcessInpaintFilter" type="grid_map::GaussianProcessInpaintFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Uses Gaussian Process regression to inpaint the map
+      </description>
+    </class>
+    <class name="gridMapFiltersDrs/DenoiseAndInpaintFilter" type="grid_map::DenoiseAndInpaintFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Improved version of the grid_map_cv inpaint filter that adds more options and also enables pre-denoising
+      </description>
+    </class>
+  </library>
+</class_libraries>

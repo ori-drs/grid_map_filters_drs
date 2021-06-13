@@ -1,0 +1,126 @@
+/*
+ * ChangeNormalsFrameFilter.cpp
+ *
+ *  Rotates the normals to match a frame
+ * 
+ *  Author: Matias Mattamala
+ */
+
+
+#include <grid_map_filters_drs/ChangeNormalsFrameFilter.hpp>
+#include <grid_map_core/grid_map_core.hpp>
+#include <pluginlib/class_list_macros.h>
+#include <string>
+#include <stdexcept>
+#include <Eigen/Dense>
+
+using namespace filters;
+
+namespace grid_map {
+
+template<typename T>
+ChangeNormalsFrameFilter<T>::ChangeNormalsFrameFilter()
+{
+}
+
+template<typename T>
+ChangeNormalsFrameFilter<T>::~ChangeNormalsFrameFilter()
+{
+}
+
+template<typename T>
+bool ChangeNormalsFrameFilter<T>::configure()
+{
+  // Load Parameters
+  // Input layer to be processed
+  if (!FilterBase<T>::getParam(std::string("input_layers_prefix"), inputNormalLayersPrefix_)) {
+    ROS_ERROR("ChangeNormalsFrameFilter filter did not find parameter `input_layer`.");
+    return false;
+  }
+  ROS_DEBUG("ChangeNormalsFrameFilter filter input_layers_prefix = %s.", inputNormalLayersPrefix_.c_str());
+
+  // Target frame
+  if (!FilterBase<T>::getParam(std::string("target_frame"), targetFrame_)) {
+    ROS_ERROR("ChangeNormalsFrameFilter did not find parameter 'target_frame'.");
+    return false;
+  }
+
+  // Initialize TF listener
+  tfListener_ = std::make_shared<tf::TransformListener>();
+
+  // Preallocate normal layer names
+  xInputLayer_  = inputNormalLayersPrefix_ + "x";
+  yInputLayer_  = inputNormalLayersPrefix_ + "y";
+  zInputLayer_  = inputNormalLayersPrefix_ + "z";
+  xOutputLayer_ = inputNormalLayersPrefix_ + "in_" + targetFrame_ + "_x";
+  yOutputLayer_ = inputNormalLayersPrefix_ + "in_" + targetFrame_ + "_y";
+  zOutputLayer_ = inputNormalLayersPrefix_ + "in_" + targetFrame_ + "_z";
+
+  return true;
+}
+
+template<typename T>
+bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
+{
+  mapOut = mapIn;
+
+  // Check if layer exists.
+  if (!mapOut.exists(xInputLayer_)) {
+    ROS_ERROR("Check your layer type! Type %s does not exist", xInputLayer_.c_str());
+    return false;
+  }
+  if (!mapOut.exists(yInputLayer_)) {
+    ROS_ERROR("Check your layer type! Type %s does not exist", yInputLayer_.c_str());
+    return false;
+  }
+  if (!mapOut.exists(zInputLayer_)) {
+    ROS_ERROR("Check your layer type! Type %s does not exist", zInputLayer_.c_str());
+    return false;
+  }
+
+  // Add filtered layer
+  mapOut.add(xOutputLayer_);
+  mapOut.add(yOutputLayer_);
+  mapOut.add(zOutputLayer_);
+
+  // Get frame of elevation map
+  mapFrame_ = mapOut.getFrameId();
+
+  // Get transformation
+  Eigen::Isometry3d mapToTarget = Eigen::Isometry3d::Identity();
+  
+  // Recover transformation
+  try {
+    tf::StampedTransform mapToTargetTransform;
+    tfListener_->lookupTransform(targetFrame_, mapFrame_, ros::Time(0), mapToTargetTransform);
+    tf::transformTFToEigen (mapToTargetTransform, mapToTarget);
+  }
+  catch (tf::TransformException& ex){
+    ROS_ERROR("%s",ex.what());
+  }
+
+  // Apply rotation
+  for (grid_map::GridMapIterator iterator(mapOut); !iterator.isPastEnd(); ++iterator) {
+    if (mapOut.isValid(*iterator, xInputLayer_) && mapOut.isValid(*iterator, yInputLayer_) && mapOut.isValid(*iterator, zInputLayer_)){
+      // Extract 3 components of normal
+      Eigen::Vector3d normal;
+      normal.x() = mapOut.at(xInputLayer_, *iterator);
+      normal.y() = mapOut.at(yInputLayer_, *iterator);
+      normal.z() = mapOut.at(zInputLayer_, *iterator);
+      
+      // Rotate normal
+      normal = mapToTarget.rotation() * normal;
+
+      // Store in output layer
+      mapOut.at(xOutputLayer_, *iterator) = normal.x();
+      mapOut.at(yOutputLayer_, *iterator) = normal.y();
+      mapOut.at(zOutputLayer_, *iterator) = normal.z();
+    }
+  }
+
+  return true;
+}
+
+} /* namespace */
+
+PLUGINLIB_EXPORT_CLASS(grid_map::ChangeNormalsFrameFilter<grid_map::GridMap>, filters::FilterBase<grid_map::GridMap>)
