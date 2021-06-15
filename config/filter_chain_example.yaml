@@ -57,8 +57,10 @@ grid_map_filters:
     params:
       input_layer: elevation_inpainted
       output_layers_prefix: normal_
-      input_smoothing_radius: 0.15 # spatial gaussian filter (in meters)
-      normals_smoothing_radius: 0.1 # spatial median filter (in meters)
+      use_pre_smoothing: true
+      use_post_smoothing: true
+      pre_smoothing_radius: 0.15 # spatial gaussian filter (in meters)
+      post_smoothing_radius: 0.1 # spatial median filter (in meters)
   
   # # Rotate surface normals.
   # - name: rotate_surface_normals
@@ -88,7 +90,7 @@ grid_map_filters:
       input_layer: traversability
       output_layer: sdf
       normalize_gradients: true
-      threshold: 0.5 # lower thresholds are more relaxed
+      threshold: 0.7 # lower thresholds are more relaxed
 
   # Geodesic distance field
   - name: geodesic
@@ -98,6 +100,6 @@ grid_map_filters:
       output_layer: geodesic
       normalize_gradients: true
       attractor_topic: /goal #/move_base_simple/goal
-      threshold: 0.5 # To be applied to the input_layer
+      threshold: 0.7 # To be applied to the input_layer
       use_field_smoothing: false
       field_smoothing_radius: 0.5

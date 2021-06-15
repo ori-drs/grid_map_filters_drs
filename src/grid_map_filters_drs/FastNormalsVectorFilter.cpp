@@ -47,19 +47,49 @@ bool FastNormalsVectorFilter<T>::configure()
   }
   ROS_DEBUG("[FastNormalsVectorFilter] output_layers_prefix = %s.", outputLayersPrefix_.c_str());
 
-  // Radius to smooth the input layer
-  if (!FilterBase<T>::getParam(std::string("input_smoothing_radius"), inputSmoothingRadius_)) {
-    ROS_ERROR("[FastNormalsVectorFilter] did not find parameter `input_smoothing_radius`.");
-    return false;
+  // Pre smoothing
+  // Use pre smoothing
+  usePreSmoothing_ = true;
+  if (!FilterBase < T > ::getParam(std::string("use_pre_smoothing"), usePreSmoothing_)) {
+    ROS_WARN("[FastNormalsVectorFilter] did not find parameter `use_pre_smoothing`. Using default %s", (usePreSmoothing_? "true" : "false"));
   }
-  ROS_DEBUG("[FastNormalsVectorFilter] output_layers_prefix = %f.", inputSmoothingRadius_);
+  ROS_DEBUG("[FastNormalsVectorFilter] use_pre_smoothing = %s.", (usePreSmoothing_? "true" : "false"));
 
-  // Radius to smooth the normal layers
-  if (!FilterBase<T>::getParam(std::string("normals_smoothing_radius"), normalsSmoothingRadius_)) {
-    ROS_ERROR("[FastNormalsVectorFilter] did not find parameter `normals_smoothing_radius`.");
-    return false;
+  // Radius to smooth the input layer
+  preSmoothingRadius_ = 3;
+  if (!FilterBase<T>::getParam(std::string("pre_smoothing_radius"), preSmoothingRadius_)) {
+    ROS_WARN("[FastNormalsVectorFilter] did not find parameter `pre_smoothing_radius`.");
   }
-  ROS_DEBUG("[FastNormalsVectorFilter] output_layers_prefix = %f.", normalsSmoothingRadius_);
+  ROS_DEBUG("[FastNormalsVectorFilter] pre_smoothing_radius = %f.", preSmoothingRadius_);
+
+  // Smoothing type
+  preSmoothingType_ = "gaussian";
+  if (!FilterBase<T>::getParam(std::string("pre_smoothing_type"), preSmoothingType_)) {
+    ROS_WARN("[FastNormalsVectorFilter] did not find parameter `pre_smoothing_type`.");
+  }
+  ROS_DEBUG("[FastNormalsVectorFilter] pre_smoothing_type = %s.", preSmoothingType_.c_str());
+
+  // Post smoothing
+  // Use post smoothing
+  usePostSmoothing_ = false;
+  if (!FilterBase < T > ::getParam(std::string("use_post_smoothing"), usePostSmoothing_)) {
+    ROS_WARN("[FastNormalsVectorFilter] did not find parameter `use_post_smoothing`. Using default %s", (usePostSmoothing_? "true" : "false"));
+  }
+  ROS_DEBUG("[FastNormalsVectorFilter] use_post_smoothing = %s.", (usePostSmoothing_? "true" : "false"));
+
+  // Radius to smooth the input layer
+  postSmoothingRadius_ = 3;
+  if (!FilterBase<T>::getParam(std::string("post_smoothing_radius"), postSmoothingRadius_)) {
+    ROS_WARN("[FastNormalsVectorFilter] did not find parameter `post_smoothing_radius`.");
+  }
+  ROS_DEBUG("[FastNormalsVectorFilter] post_smoothing_radius = %f.", postSmoothingRadius_);
+
+  // Smoothing type
+  postSmoothingType_ = "median";
+  if (!FilterBase<T>::getParam(std::string("post_smoothing_type"), postSmoothingType_)) {
+    ROS_WARN("[FastNormalsVectorFilter] did not find parameter `post_smoothing_type`.");
+  }
+  ROS_DEBUG("[FastNormalsVectorFilter] post_smoothing_type = %s.", postSmoothingType_.c_str());
 
   // Preallocate normal layer names
   xOutputLayer_ = outputLayersPrefix_ + "x";
@@ -87,19 +117,25 @@ bool FastNormalsVectorFilter<T>::update(const T& mapIn, T& mapOut)
 
   // Convert selected layer to OpenCV image
   cv::Mat cvLayer;
-  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, cvLayer);
+  const float minValue = mapOut.get(inputLayer_).minCoeffOfFinites();
+  const float maxValue = mapOut.get(inputLayer_).maxCoeffOfFinites();
 
-  // Compute the smoothing radius
-  int inputBlurRadius = std::max((int)std::ceil(inputSmoothingRadius_ / resolution), 1);
-  inputBlurRadius = (inputBlurRadius % 2 == 0)? inputBlurRadius + 1 : inputBlurRadius;
+  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, 
+                                                  minValue, maxValue, cvLayer);
 
-  // At least we use a smoothing of 3, and maximum 5 for float images
-  int normalsBlurRadius = std::min(std::max((int)std::ceil(normalsSmoothingRadius_ / resolution), 1), 5); 
-  normalsBlurRadius = (normalsBlurRadius % 2 == 0)? normalsBlurRadius + 1 : normalsBlurRadius;
+  // Pre smoothing
+  if(usePreSmoothing_) {
+    // Compute the smoothing radius
+    int blurRadius = std::max((int)std::ceil(preSmoothingRadius_ / resolution), 3);
+    blurRadius = (blurRadius % 2 == 0)? blurRadius + 1 : blurRadius;
 
-  // Blur before computing gradients to smooth the image
-  cv::GaussianBlur(cvLayer, cvLayer, cv::Size(inputBlurRadius, inputBlurRadius), 0);
-  // cv::medianBlur(cvLayer, cvLayer, inputBlurRadius);
+    if(preSmoothingType_ == "median") {
+      cv::medianBlur(cvLayer, cvLayer, blurRadius);
+    } else {
+      // Blur before computing gradients to smooth the image
+      cv::GaussianBlur(cvLayer, cvLayer, cv::Size(blurRadius, blurRadius), 0);
+    }
+  }
 
   // Compute gradients
   // Ref: https://stackoverflow.com/a/34644939/3570362
@@ -114,9 +150,21 @@ bool FastNormalsVectorFilter<T>::update(const T& mapIn, T& mapOut)
   cvGradientsX/=4;
   cvGradientsY/=4;
 
-  // Statistical filter of gradients
-  cv::medianBlur(cvGradientsX, cvGradientsX, normalsBlurRadius);
-  cv::medianBlur(cvGradientsY, cvGradientsY, normalsBlurRadius);
+  // Post smoothing
+  if(usePostSmoothing_) {
+    // Compute the smoothing radius
+    int blurRadius = std::max((int)std::ceil(postSmoothingRadius_ / resolution), 3);
+    blurRadius = (blurRadius % 2 == 0)? blurRadius + 1 : blurRadius;
+
+    if(postSmoothingType_ == "median") {
+      cv::medianBlur(cvGradientsX, cvGradientsX, blurRadius);
+      cv::medianBlur(cvGradientsY, cvGradientsY, blurRadius);
+    } else {
+      // Blur before computing gradients to smooth the image
+      cv::GaussianBlur(cvGradientsX, cvGradientsX, cv::Size(blurRadius, blurRadius), 0);
+      cv::GaussianBlur(cvGradientsY, cvGradientsY, cv::Size(blurRadius, blurRadius), 0);
+    }
+  }
 
   // Compute norm
   cv::Mat sqGradientsX;

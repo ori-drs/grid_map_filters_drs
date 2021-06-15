@@ -172,14 +172,20 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
   // Convert selected layer to OpenCV image
   cv::Mat cvLayer;
-  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, cvLayer);
+  const float minValue = mapOut.get(inputLayer_).minCoeffOfFinites();
+  const float maxValue = mapOut.get(inputLayer_).maxCoeffOfFinites();
+  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, 
+                                                  minValue, maxValue, cvLayer);  
+  cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
+  cvLayer.convertTo(cvLayer, CV_32F);
+  cvLayer*=255;
 
   // Apply threshold and compute obstacle masks
   cv::Mat cvFreeSpaceMask = cvLayer;
   cv::Mat cvObstacleSpaceMask;
 
   // Binarize input layer
-  cv::threshold(cvLayer, cvFreeSpaceMask, threshold_, 255, cv::THRESH_BINARY);	
+  cv::threshold(cvLayer, cvFreeSpaceMask, 255*threshold_, 255, cv::THRESH_BINARY);	
   cvFreeSpaceMask.convertTo(cvFreeSpaceMask, CV_8UC1);
   cv::bitwise_not(cvFreeSpaceMask, cvObstacleSpaceMask);
   cvObstacleSpaceMask.convertTo(cvObstacleSpaceMask, CV_32F);
@@ -288,13 +294,13 @@ grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gri
         grid_map::Index closestIndex = *iterator;
         if(gridMap.at(freeSpaceLayer_, closestIndex) > 0) {
           index = closestIndex;
-          ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
+          // ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
           break;
         }
       }
     }
   }
-  ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
+  // ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
   // cv::waitKey(10);
   
   return index;

@@ -63,8 +63,12 @@ class FastNormalsVectorFilter : public filters::FilterBase<T>
   std::string outputLayersPrefix_;
 
   //! Radius to smooth the normals
-  double inputSmoothingRadius_;
-  double normalsSmoothingRadius_;
+  bool usePreSmoothing_;
+  bool usePostSmoothing_;
+  double preSmoothingRadius_;
+  double postSmoothingRadius_;
+  std::string preSmoothingType_;
+  std::string postSmoothingType_;  
 
   // Layer names
   std::string xOutputLayer_;

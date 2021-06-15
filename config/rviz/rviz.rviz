@@ -578,42 +578,12 @@ Visualization Manager:
       Enabled: true
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
-      Name: Pose
+      Name: Goal
       Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
-      Topic: /position_controller/current_goal
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Arrow Width: 0.5
-      Class: rviz/WrenchStamped
-      Enabled: true
-      Force Arrow Scale: 2
-      Force Color: 204; 51; 51
-      Hide Small Values: true
-      History Length: 1
-      Name: WrenchStamped
-      Queue Size: 10
-      Topic: /position_controller/velocity_combined
-      Torque Arrow Scale: 2
-      Torque Color: 204; 204; 51
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Angular Arrow Scale: 2
-      Angular Color: 204; 204; 51
-      Arrow Width: 0.5
-      Class: rviz/TwistStamped
-      Enabled: true
-      Hide Small Values: true
-      History Length: 1
-      Linear Arrow Scale: 2
-      Linear Color: 204; 51; 51
-      Name: TwistStamped
-      Queue Size: 10
-      Topic: /path_planning_and_following/twist
+      Topic: /goal
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -646,7 +616,7 @@ Visualization Manager:
       Color Transformer: ""
       ColorMap: turbo
       Enabled: false
-      Height Layer: elevation
+      Height Layer: elevation_inpainted
       Height Transformer: GridMapLayer
       History Length: 1
       Invert ColorMap: true
@@ -691,13 +661,13 @@ Visualization Manager:
       Use ColorMap: true
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /grid_map_visualization/geodesic_gradient
       Name: GDF gradient
       Namespaces:
-        {}
+        vector: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Class: grid_map_rviz_plugin/GridMap
@@ -765,19 +735,19 @@ Visualization Manager:
       Use ColorMap: true
       Value: false
     - Alpha: 1
-      Autocompute Intensity Bounds: true
+      Autocompute Intensity Bounds: false
       Class: grid_map_rviz_plugin/GridMap
       Color: 200; 200; 200
       Color Layer: traversability
       Color Transformer: ""
       ColorMap: turbo
       Enabled: false
-      Height Layer: elevation
+      Height Layer: elevation_inpainted
       Height Transformer: GridMapLayer
       History Length: 1
       Invert ColorMap: false
       Max Color: 255; 255; 255
-      Max Intensity: 10
+      Max Intensity: 1
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Traversability
@@ -790,11 +760,11 @@ Visualization Manager:
       Autocompute Intensity Bounds: true
       Class: grid_map_rviz_plugin/GridMap
       Color: 200; 200; 200
-      Color Layer: elevation
-      Color Transformer: GridMapLayer
+      Color Layer: slope
+      Color Transformer: ""
       ColorMap: turbo
       Enabled: false
-      Height Layer: geodesic_obstacle_space
+      Height Layer: sdf_obstacle_space
       Height Transformer: GridMapLayer
       History Length: 1
       Invert ColorMap: false
@@ -804,7 +774,7 @@ Visualization Manager:
       Min Intensity: 0
       Name: GridMap
       Show Grid Lines: true
-      Topic: /elevation_mapping/elevation_map_raw_filtered
+      Topic: /elevation_mapping/elevation_map_filtered
       Unreliable: false
       Use ColorMap: true
       Value: false
@@ -852,6 +822,36 @@ Visualization Manager:
       Unreliable: false
       Use ColorMap: true
       Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Class: grid_map_rviz_plugin/GridMap
+      Color: 200; 200; 200
+      Color Layer: normal_z
+      Color Transformer: ""
+      ColorMap: turbo
+      Enabled: false
+      Height Layer: elevation
+      Height Transformer: GridMapLayer
+      History Length: 1
+      Invert ColorMap: false
+      Max Color: 255; 255; 255
+      Max Intensity: 10
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Normals Z
+      Show Grid Lines: true
+      Topic: /elevation_mapping/elevation_map_filtered
+      Unreliable: false
+      Use ColorMap: true
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /grid_map_visualization/normals
+      Name: Normals
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 176; 176; 176
@@ -884,7 +884,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.073214054107666
+      Distance: 2.6649715900421143
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -892,17 +892,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.185712993144989
-        Y: 0.6160778403282166
-        Z: -0.628267765045166
+        X: 0.21716557443141937
+        Y: 0.21466204524040222
+        Z: -0.5614542961120605
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.299796462059021
+      Pitch: 1.229796290397644
       Target Frame: base
-      Yaw: 0.0935865044593811
+      Yaw: 4.749979019165039
     Saved: ~
 Window Geometry:
   Displays:
@@ -920,5 +920,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1990
-  X: 2141
-  Y: 199
+  X: 2032
+  Y: 92

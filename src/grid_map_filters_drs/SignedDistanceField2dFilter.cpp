@@ -77,19 +77,25 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
   // Convert selected layer to OpenCV image
   cv::Mat cvLayer;
-  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, cvLayer);
+  const float minValue = mapOut.get(inputLayer_).minCoeffOfFinites();
+  const float maxValue = mapOut.get(inputLayer_).maxCoeffOfFinites();
+  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, 
+                                                  minValue, maxValue, cvLayer);  
+  cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
+  cvLayer.convertTo(cvLayer, CV_32F);
+  cvLayer*=255;
 
   // Apply threshold and compute obstacle masks
-  cv::Mat ObstacleSpaceMask, cvFreeSpaceMask;
-  cv::threshold(cvLayer, ObstacleSpaceMask, threshold_, 255, cv::THRESH_BINARY);	
-  ObstacleSpaceMask.convertTo(ObstacleSpaceMask, CV_8UC1);
-  cv::bitwise_not(ObstacleSpaceMask, cvFreeSpaceMask);
+  cv::Mat cvObstacleSpaceMask, cvFreeSpaceMask;
+  cv::threshold(cvLayer, cvObstacleSpaceMask, 255*threshold_, 255, cv::THRESH_BINARY);
+  cvObstacleSpaceMask.convertTo(cvObstacleSpaceMask, CV_8UC1);
+  cv::bitwise_not(cvObstacleSpaceMask, cvFreeSpaceMask);
 
   // Compute SDF
   cv::Mat cvSdfFreeSpace;
   cv::Mat cvSdfObstacleSpace;
   cv::distanceTransform(cvFreeSpaceMask, cvSdfFreeSpace, cv::DIST_L2, 3);         // TODO: parametrize kernel and distance metric
-  cv::distanceTransform(ObstacleSpaceMask, cvSdfObstacleSpace, cv::DIST_L2, 3); // TODO: parametrize kernel and distance metric
+  cv::distanceTransform(cvObstacleSpaceMask, cvSdfObstacleSpace, cv::DIST_L2, 3); // TODO: parametrize kernel and distance metric
   cv::Mat cvSdf = cvSdfObstacleSpace - cvSdfFreeSpace;
   
   // Smooth SDF 
@@ -119,12 +125,12 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   }
 
   // Some normalization to ease visualization
-  ObstacleSpaceMask/=255.0;
+  cvObstacleSpaceMask/=255.0;
   cvFreeSpaceMask/=255.0;
 
   // Add layers
   addMatAsLayer(cvSdf, outputLayer_, mapOut, resolution);
-  addMatAsLayer(ObstacleSpaceMask, outputLayer_ + "_obstacle_space", mapOut);
+  addMatAsLayer(cvObstacleSpaceMask, outputLayer_ + "_obstacle_space", mapOut);
   addMatAsLayer(cvFreeSpaceMask, outputLayer_  + "_free_space", mapOut);
   addMatAsLayer(cvGradientsX, outputLayer_ + "_gradient_x", mapOut);
   addMatAsLayer(cvGradientsY, outputLayer_ + "_gradient_y", mapOut);
