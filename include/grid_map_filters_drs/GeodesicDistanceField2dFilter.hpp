@@ -60,6 +60,11 @@ class GeodesicDistanceField2dFilter : public filters::FilterBase<T>
 
  private:
   /*!
+   * Finds a valid attractor in the current grid map
+   */
+  grid_map::Index getAttractorIndex(const T& gridMap, const grid_map::Position& attractorPosition);
+
+  /*!
    * Helper to fill layers with cv::Mats
    */
   void addMatAsLayer(const cv::Mat& m, const std::string& layerName, grid_map::GridMap& gridMap, double resolution=1.0);
@@ -75,9 +80,19 @@ class GeodesicDistanceField2dFilter : public filters::FilterBase<T>
   //! Output layer prefix
   std::string outputLayer_;
 
+  // ! Output layers
+  std::string obstacleLayer_;
+  std::string freeSpaceLayer_;
+  std::string gradientXLayer_;
+  std::string gradientYLayer_;
+  std::string gradientZLayer_;
+
   //! Traversability threshold
   double threshold_;
-  bool useBinarization_;
+
+  //! Smooth field options
+  double fieldSmoothingRadius_;
+  bool fieldSmoothing_;
 
   //! Attractor position
   grid_map::Position attractorPosition_;
@@ -85,15 +100,12 @@ class GeodesicDistanceField2dFilter : public filters::FilterBase<T>
   //! Attractor topic
   std::string attractorTopic_;
 
-  //! Filter chain update service
-  std::string filterChainUpdateService_;
-
   //! Target frame
   std::string attractorFrame_;
   //! Map frame
   std::string mapFrame_;
   //! Goal id
-  ros::Time goalStamp_;
+  ros::Time attractorStamp_;
 
   //! Flag to normalize output gradients
   bool normalizeGradients_;
@@ -109,9 +121,6 @@ class GeodesicDistanceField2dFilter : public filters::FilterBase<T>
   ros::Subscriber attractorSubscriber_;
   ros::Subscriber attractorSubscriberRviz_;
   ros::Subscriber attractorSubscriberRviz2_;
-
-  //! Service client to force update of filter chain
-  ros::ServiceClient forceUpdateClient_;
 };
 
 } /* namespace */

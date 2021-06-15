@@ -3,7 +3,9 @@
   <arg name="output_topic"          default="/elevation_mapping/elevation_map_filtered"/>
   <arg name="filter_chain_config"   default="$(find grid_map_filters_drs)/config/filter_chain_example.yaml"/>
   <arg name="visualizations_config" default="$(find grid_map_filters_drs)/config/visualizations_example.yaml"/>
-  <arg name="launch_prefix"         default=""/>
+  <arg name="debug"                 default="false"/>
+  <arg unless="$(arg debug)"        name="launch_prefix" value="" />
+  <arg     if="$(arg debug)"        name="launch_prefix" value="gdb -ex run --args" />
 
   <!-- Elevation map filter node. -->
   <node pkg="grid_map_filters_drs" type="grid_map_filter_drs_node" name="elevation_map_filter" output="screen" launch-prefix="$(arg launch_prefix)">
@@ -21,7 +23,7 @@
     <!-- Input topic -->
     <param name="grid_map_topic" value="$(arg output_topic)" />
 
-    <!-- Load visualziations configuration -->
+    <!-- Load visualizations configuration -->
     <rosparam command="load" file="$(arg visualizations_config)" />
   </node>
 

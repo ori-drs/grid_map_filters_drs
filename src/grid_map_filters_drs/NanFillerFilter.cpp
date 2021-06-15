@@ -35,29 +35,29 @@ bool NanFillerFilter<T>::configure()
   // Load Parameters
   // Input layer to be processed
   if (!FilterBase<T>::getParam(std::string("input_layer"), inputLayer_)) {
-    ROS_ERROR("NanFillerFilter filter did not find parameter `input_layer`.");
+    ROS_ERROR("[NanFillerFilter] did not find parameter `input_layer`.");
     return false;
   }
-  ROS_DEBUG("NanFillerFilter filter input_layer = %s.", inputLayer_.c_str());
+  ROS_DEBUG("[NanFillerFilter] input_layer = %s.", inputLayer_.c_str());
 
   // Output layer to be processed
   if (!FilterBase<T>::getParam(std::string("output_layer"), outputLayer_)) {
-    ROS_ERROR("NanFillerFilter filter did not find parameter `output_layer`.");
+    ROS_ERROR("[NanFillerFilter] did not find parameter `output_layer`.");
     return false;
   }
-  ROS_DEBUG("NanFillerFilter filter output_layer = %s.", outputLayer_.c_str());
+  ROS_DEBUG("[NanFillerFilter] output_layer = %s.", outputLayer_.c_str());
 
   if (!FilterBase<T>::getParam(std::string("set_to"), setTo_)) {
-    ROS_ERROR("NanFillerFilter did not find parameter 'set_to'.");
+    ROS_ERROR("[NanFillerFilter] not find parameter 'set_to'.");
     return false;
   }
-  ROS_DEBUG("NanFillerFilter filter set_to = %s.", setTo_.c_str());
+  ROS_DEBUG("[NanFillerFilter] set_to = %s.", setTo_.c_str());
 
   if (!FilterBase<T>::getParam(std::string("value"), value_)) {
-    ROS_ERROR("NanFillerFilter did not find parameter 'set_to'.");
+    ROS_ERROR("[NanFillerFilter] did not find parameter 'set_to'.");
     return false;
   }
-  ROS_DEBUG("NanFillerFilter filter value = %f.", value_);
+  ROS_DEBUG("[NanFillerFilter] value = %f.", value_);
 
   return true;
 }
@@ -71,7 +71,7 @@ bool NanFillerFilter<T>::update(const T& mapIn, T& mapOut)
 
   // Check if layer exists.
   if (!mapOut.exists(inputLayer_)) {
-    ROS_ERROR("Check your layer type! Type %s does not exist", inputLayer_.c_str());
+    ROS_ERROR("[NanFillerFilter] Check your layer type! Type %s does not exist", inputLayer_.c_str());
     return false;
   }
 
@@ -82,22 +82,22 @@ bool NanFillerFilter<T>::update(const T& mapIn, T& mapOut)
   float newValue = 0.0;
   if(setTo_ == "min") {
     newValue = mapOut.get(inputLayer_).minCoeffOfFinites();
-    ROS_DEBUG_STREAM("newValue (min): " << newValue);
+    ROS_DEBUG_STREAM("[NanFillerFilter] newValue (min): " << newValue);
 
   } else if (setTo_ == "max") {
     newValue = mapOut.get(inputLayer_).maxCoeffOfFinites();
-    ROS_DEBUG_STREAM("newValue (max): " << newValue);
+    ROS_DEBUG_STREAM("[NanFillerFilter] newValue (max): " << newValue);
 
   } else if (setTo_ == "mean") {
     newValue = mapOut.get(inputLayer_).meanOfFinites();
-    ROS_DEBUG_STREAM("newValue (mean): " << newValue);
+    ROS_DEBUG_STREAM("[NanFillerFilter] newValue (mean): " << newValue);
 
   } else if (setTo_ == "fixed_value") {
     newValue = value_;
-    ROS_DEBUG_STREAM("newValue (fixed_value): " << value_);
+    ROS_DEBUG_STREAM("[NanFillerFilter] newValue (fixed_value): " << value_);
   
   } else {
-    ROS_WARN_STREAM("set_to option not valid. Using minimum by default");
+    ROS_WARN_STREAM("[NanFillerFilter] set_to option not valid. Using minimum by default");
     newValue = mapOut.get(inputLayer_).minCoeffOfFinites();
   }
 

@@ -59,8 +59,7 @@ bool SignedDistanceField2dFilter<T>::configure()
 }
 
 template<typename T>
-bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut)
-{
+bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   auto tic = std::chrono::high_resolution_clock::now();
 
   // Copy and fix indexing
@@ -81,18 +80,19 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut)
   grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, cvLayer);
 
   // Apply threshold and compute obstacle masks
-  cv::Mat cvObstacleSpace;
-  cv::threshold(cvLayer, cvObstacleSpace, threshold_, 255, cv::THRESH_BINARY);	
-  cvObstacleSpace.convertTo(cvObstacleSpace, CV_8UC1);
-  cv::Mat cvFreeSpace = 255 - cvObstacleSpace;
+  cv::Mat ObstacleSpaceMask, cvFreeSpaceMask;
+  cv::threshold(cvLayer, ObstacleSpaceMask, threshold_, 255, cv::THRESH_BINARY);	
+  ObstacleSpaceMask.convertTo(ObstacleSpaceMask, CV_8UC1);
+  cv::bitwise_not(ObstacleSpaceMask, cvFreeSpaceMask);
 
   // Compute SDF
   cv::Mat cvSdfFreeSpace;
   cv::Mat cvSdfObstacleSpace;
-  cv::distanceTransform(cvFreeSpace, cvSdfFreeSpace, cv::DIST_L2, 3); // TODO: parametrize kernel and distance metric
-  cv::distanceTransform(cvObstacleSpace, cvSdfObstacleSpace, cv::DIST_L2, 3); // TODO: parametrize kernel and distance metric
+  cv::distanceTransform(cvFreeSpaceMask, cvSdfFreeSpace, cv::DIST_L2, 3);         // TODO: parametrize kernel and distance metric
+  cv::distanceTransform(ObstacleSpaceMask, cvSdfObstacleSpace, cv::DIST_L2, 3); // TODO: parametrize kernel and distance metric
   cv::Mat cvSdf = cvSdfObstacleSpace - cvSdfFreeSpace;
-
+  
+  // Smooth SDF 
   cv::GaussianBlur(cvSdf, cvSdf, cv::Size(5, 5), 0);
 
   // Compute gradients
@@ -105,7 +105,6 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut)
   cvGradientsY*=resolution;
 
   if(normalizeGradients_) {
-    // Normalize gradients
     // Compute norm
     cv::Mat sqGradientsX;
     cv::Mat sqGradientsY;
@@ -119,16 +118,21 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut)
     cvGradientsY /= normNormal;
   }
 
+  // Some normalization to ease visualization
+  ObstacleSpaceMask/=255.0;
+  cvFreeSpaceMask/=255.0;
+
   // Add layers
   addMatAsLayer(cvSdf, outputLayer_, mapOut, resolution);
-  addMatAsLayer(cvGradientsX, outputLayer_+"_gradient_x", mapOut);
-  addMatAsLayer(cvGradientsY, outputLayer_+"_gradient_y", mapOut);
-  addMatAsLayer(cvGradientsZ, outputLayer_+"_gradient_z", mapOut);
+  addMatAsLayer(ObstacleSpaceMask, outputLayer_ + "_obstacle_space", mapOut);
+  addMatAsLayer(cvFreeSpaceMask, outputLayer_  + "_free_space", mapOut);
+  addMatAsLayer(cvGradientsX, outputLayer_ + "_gradient_x", mapOut);
+  addMatAsLayer(cvGradientsY, outputLayer_ + "_gradient_y", mapOut);
+  addMatAsLayer(cvGradientsZ, outputLayer_ + "_gradient_z", mapOut);
 
-  // cv::namedWindow("input layer", cv::WINDOW_NORMAL );
-  // cv::imshow("input layer", cvInputLayer);
-  // cv::waitKey(100);
+  mapOut.setBasicLayers({});
 
+  // Timing
   auto toc = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
   ROS_DEBUG_STREAM("[SignedDistanceField2dFilter] Process time: " << elapsedTime.count() << " ms");
@@ -142,23 +146,16 @@ void SignedDistanceField2dFilter<T>::addMatAsLayer(const cv::Mat& mat, const std
   // Get max and min
   double minDistance, maxDistance;
   cv::minMaxLoc(mat, &minDistance, &maxDistance);
-  // ROS_WARN_STREAM("[" << layerName << "] mindist: " << minDistance << ", maxdist: " << maxDistance);
 
   minDistance*= resolution;
   maxDistance*= resolution;
-
-  // cv::namedWindow(layerName + "_original", cv::WINDOW_NORMAL );
-  // cv::imshow(layerName + "_original", mat);
-  
+ 
   // Normalize sdf to get a greyscale image
   cv::Mat normalized;
   cv::normalize(mat, normalized, 0, 1.0, cv::NORM_MINMAX);
   normalized.convertTo(normalized, CV_32F);
 
-  // cv::namedWindow(layerName + "_normalized", cv::WINDOW_NORMAL );
-  // cv::imshow(layerName + "_normalized", normalized);
-
-  // Add SDF layer to elevation map
+  // Add layer to elevation map
   grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(normalized, layerName,
                                                   gridMap, minDistance, maxDistance);
 }

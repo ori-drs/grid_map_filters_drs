@@ -19,7 +19,7 @@ grid_map_filters:
       output_layer: elevation_inpainted
       radius: 0.1 # in m
       inpainting_type: ns # 'ns' or 'telea' allowed
-      pre_denoising: false # enables denoising before inpainting
+      pre_denoising: true # enables denoising before inpainting
       denoising_radius: 0.15 # m
       denoising_type: total_variation # 'total_variation', 'non_local', 'gaussian', and 'median' supported
 
@@ -98,6 +98,6 @@ grid_map_filters:
       output_layer: geodesic
       normalize_gradients: true
       attractor_topic: /goal #/move_base_simple/goal
-      filter_chain_update_service: /elevation_map_filter/force_update
-      threshold: 0.5 # Only applicable when using binarization
-      use_binarization: true
+      threshold: 0.5 # To be applied to the input_layer
+      use_field_smoothing: false
+      field_smoothing_radius: 0.5

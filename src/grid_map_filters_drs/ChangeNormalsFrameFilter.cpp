@@ -34,14 +34,14 @@ bool ChangeNormalsFrameFilter<T>::configure()
   // Load Parameters
   // Input layer to be processed
   if (!FilterBase<T>::getParam(std::string("input_layers_prefix"), inputNormalLayersPrefix_)) {
-    ROS_ERROR("ChangeNormalsFrameFilter filter did not find parameter `input_layer`.");
+    ROS_ERROR("[ChangeNormalsFrameFilter] did not find parameter `input_layer`.");
     return false;
   }
-  ROS_DEBUG("ChangeNormalsFrameFilter filter input_layers_prefix = %s.", inputNormalLayersPrefix_.c_str());
+  ROS_DEBUG("[ChangeNormalsFrameFilter] input_layers_prefix = %s.", inputNormalLayersPrefix_.c_str());
 
   // Target frame
   if (!FilterBase<T>::getParam(std::string("target_frame"), targetFrame_)) {
-    ROS_ERROR("ChangeNormalsFrameFilter did not find parameter 'target_frame'.");
+    ROS_ERROR("[ChangeNormalsFrameFilter] did not find parameter 'target_frame'.");
     return false;
   }
 
@@ -62,19 +62,21 @@ bool ChangeNormalsFrameFilter<T>::configure()
 template<typename T>
 bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
 {
+  auto tic = std::chrono::high_resolution_clock::now();
+
   mapOut = mapIn;
 
   // Check if layer exists.
   if (!mapOut.exists(xInputLayer_)) {
-    ROS_ERROR("Check your layer type! Type %s does not exist", xInputLayer_.c_str());
+    ROS_ERROR("[ChangeNormalsFrameFilter] Check your layer type! Type %s does not exist", xInputLayer_.c_str());
     return false;
   }
   if (!mapOut.exists(yInputLayer_)) {
-    ROS_ERROR("Check your layer type! Type %s does not exist", yInputLayer_.c_str());
+    ROS_ERROR("[ChangeNormalsFrameFilter] Check your layer type! Type %s does not exist", yInputLayer_.c_str());
     return false;
   }
   if (!mapOut.exists(zInputLayer_)) {
-    ROS_ERROR("Check your layer type! Type %s does not exist", zInputLayer_.c_str());
+    ROS_ERROR("[ChangeNormalsFrameFilter] Check your layer type! Type %s does not exist", zInputLayer_.c_str());
     return false;
   }
 
@@ -117,6 +119,11 @@ bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
       mapOut.at(zOutputLayer_, *iterator) = normal.z();
     }
   }
+  
+  // Timing
+  auto toc = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
+  ROS_DEBUG_STREAM("[ChangeNormalsFrameFilter] Process time: " << elapsedTime.count() << " ms");
 
   return true;
 }

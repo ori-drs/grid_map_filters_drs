@@ -34,67 +34,98 @@ template<typename T>
 bool DenoiseAndInpaintFilter<T>::configure() {
   // Input layer
   if (!FilterBase < T > ::getParam(std::string("input_layer"), inputLayer_)) {
-    ROS_ERROR("Inpaint filter did not find parameter `input_layer`.");
+    ROS_ERROR("[DenoiseAndInpaintFilter] filter did not find parameter `input_layer`.");
     return false;
   }
-  ROS_DEBUG("Inpaint input layer is = %s.", inputLayer_.c_str());
+  ROS_DEBUG("[DenoiseAndInpaintFilter] input layer is = %s.", inputLayer_.c_str());
 
   // Output layer
   if (!FilterBase < T > ::getParam(std::string("output_layer"), outputLayer_)) {
-    ROS_ERROR("Inpaint filter did not find parameter `output_layer`.");
+    ROS_ERROR("[DenoiseAndInpaintFilter] did not find parameter `output_layer`.");
     return false;
   }
-  ROS_DEBUG("Inpaint output layer = %s.", outputLayer_.c_str());
+  ROS_DEBUG("[DenoiseAndInpaintFilter] output layer = %s.", outputLayer_.c_str());
 
   // Inpainting radius
   if (!FilterBase < T > ::getParam(std::string("radius"), radius_)) {
-    ROS_ERROR("InpaintRadius filter did not find param radius.");
+    ROS_ERROR("[DenoiseAndInpaintFilter] filter did not find param radius.");
     return false;
   }
   if (radius_ < 0.0) {
-    ROS_ERROR("Radius must be greater than zero.");
+    ROS_ERROR("[DenoiseAndInpaintFilter] Radius must be greater than zero.");
     return false;
   }
-  ROS_DEBUG("Radius = %f.", radius_);
+  ROS_DEBUG("[DenoiseAndInpaintFilter] Radius = %f.", radius_);
 
   // Inpainting type
   inpaintingType_ = "ns";
   if (!FilterBase < T > ::getParam(std::string("inpainting_type"), inpaintingType_)) {
-    ROS_WARN("Inpaint filter did not find parameter `inpainting_type`. Using default %s", inpaintingType_.c_str());
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `inpainting_type`. Using default %s", inpaintingType_.c_str());
   }
-  ROS_DEBUG("Inpaint inpainting_type = %s.", inpaintingType_.c_str());
+  ROS_DEBUG("[DenoiseAndInpaintFilter] inpainting_type = %s.", inpaintingType_.c_str());
 
   // Denoising options
   // Apply denoising flag
   applyDenoising_ = false;
   if (!FilterBase < T > ::getParam(std::string("pre_denoising"), applyDenoising_)) {
-    ROS_WARN("Inpaint filter did not find parameter `pre_denoising`. Using default %s", (applyDenoising_? "true" : "false"));
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `pre_denoising`. Using default %s", (applyDenoising_? "true" : "false"));
   }
-  ROS_DEBUG("Inpaint pre_denoising = %s.", (applyDenoising_? "true" : "false"));
+  ROS_DEBUG("[DenoiseAndInpaintFilter] pre_denoising = %s.", (applyDenoising_? "true" : "false"));
 
   // Denoising radius
   denoisingRadius_ = 0.1;
   if (!FilterBase < T > ::getParam(std::string("denoising_radius"), denoisingRadius_)) {
-    ROS_WARN("InpaintRadius filter did not find param denoising_radius. Using default %f", denoisingRadius_);
+    ROS_WARN("[DenoiseAndInpaintFilter] filter did not find param denoising_radius. Using default %f", denoisingRadius_);
   }
   if (denoisingRadius_ < 0.0) {
-    ROS_ERROR("denoising_radius must be greater than zero.");
+    ROS_ERROR("[DenoiseAndInpaintFilter] denoising_radius must be greater than zero.");
     return false;
   }
-  ROS_DEBUG("denoising_radius = %f.", denoisingRadius_);
+  ROS_DEBUG("[DenoiseAndInpaintFilter] denoising_radius = %f.", denoisingRadius_);
 
   // Denoising type
   denoisingType_ = "median";
   if (!FilterBase < T > ::getParam(std::string("denoising_type"), denoisingType_)) {
-    ROS_WARN("Inpaint filter did not find parameter `denoising_type`. Using default %s", denoisingType_.c_str());
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `denoising_type`. Using default %s", denoisingType_.c_str());
   }
-  ROS_DEBUG("Inpaint denoising_type = %s.", denoisingType_.c_str());
+  ROS_DEBUG("[DenoiseAndInpaintFilter] denoising_type = %s.", denoisingType_.c_str());
+
+  // Total variation lambda
+  totalVariationLambda_ = 0.5;
+  if (!FilterBase < T > ::getParam(std::string("total_variation_lambda"), totalVariationLambda_)) {
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `total_variation_lambda`. Using default %f", totalVariationLambda_);
+  }
+  ROS_DEBUG("[DenoiseAndInpaintFilter] total_variation_lambda = %f.", totalVariationLambda_);
+
+  // Total variation iterations
+  totalVariationIters_ = 30;
+  if (!FilterBase < T > ::getParam(std::string("total_variation_iters"), totalVariationIters_)) {
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `total_variation_iters`. Using default %i", totalVariationIters_);
+  }
+  ROS_DEBUG("[DenoiseAndInpaintFilter] total_variation_iters = %i.", totalVariationIters_);
+
+  // Non local strength
+  nonLocalStrength_ = 30;
+  if (!FilterBase < T > ::getParam(std::string("non_local_strength"), nonLocalStrength_)) {
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `non_local_strength`. Using default %f", nonLocalStrength_);
+  }
+  ROS_DEBUG("[DenoiseAndInpaintFilter] non_local_strength = %f.", nonLocalStrength_);
+
+  // Non local search window size
+  nonLocalSearchWindowSize_ = 21;
+  if (!FilterBase < T > ::getParam(std::string("non_local_search_window"), totalVariationIters_)) {
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `non_local_search_window`. Using default %i", nonLocalSearchWindowSize_);
+  }
+  ROS_DEBUG("[DenoiseAndInpaintFilter] non_local_search_window = %i.", nonLocalSearchWindowSize_);
 
   return true;
 }
 
 template<typename T>
 bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
+
+  auto tic = std::chrono::high_resolution_clock::now();
+
   // Add new layer to the elevation map.
   mapOut = mapIn;
   mapOut.add(outputLayer_);
@@ -126,18 +157,16 @@ bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
     int radiusInPixels =  std::max((int)std::ceil(denoisingRadius_ / mapIn.getResolution()), 3); // Minimum kernel of size 3
     radiusInPixels = (radiusInPixels % 2 == 0)? radiusInPixels + 1 : radiusInPixels;
 
-    ROS_WARN_STREAM("DENOISING RADIUS: " << radiusInPixels);
+    // ROS_WARN_STREAM("[DenoiseAndInpaintFilter] denoising radius: " << radiusInPixels);
 
     if(denoisingType_ == "non_local") {
       const int searchWindowSize = 21; // (Odd number) Size in pixels of the window used to compute weighted average for given pixel
       const float h = 30; // Filter strength (larger numbers -> less noise but removes details)
-      cv::fastNlMeansDenoising(originalImage, denoisedImage, h, radiusInPixels, searchWindowSize);	
+      cv::fastNlMeansDenoising(originalImage, denoisedImage, nonLocalStrength_, radiusInPixels, nonLocalSearchWindowSize_);	
     
     } else if(denoisingType_ == "total_variation" || denoisingType_ == "tv") {
       std::vector<cv::Mat> observations(1, originalImage);
-      double lambda = 0.1;
-      int nIters = 30;
-      cv::denoise_TVL1(observations, denoisedImage, lambda, nIters);
+      cv::denoise_TVL1(observations, denoisedImage, totalVariationLambda_, totalVariationIters_);
 
     } else if(denoisingType_ == "gaussian") {
       cv::GaussianBlur(originalImage, denoisedImage, cv::Size(radiusInPixels, radiusInPixels), 0);
@@ -146,7 +175,7 @@ bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
       cv::medianBlur(originalImage, denoisedImage, radiusInPixels);
     
     } else {
-      ROS_WARN_STREAM("denoising_type option [" << denoisingType_ << "] not supported. Will not apply any deoising");
+      ROS_WARN_STREAM("[DenoiseAndInpaintFilter] denoising_type option [" << denoisingType_ << "] not supported. Will not apply any deoising");
     }
 
     // Apply inverse mask to recover original input but denoised (to avoid artifacts on the edges)
@@ -154,6 +183,8 @@ bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
     cv::bitwise_not(mask, inverseMask);
     cv::erode(inverseMask, inverseMask, cv::Mat());
     denoisedImage.copyTo(originalImage, inverseMask);
+
+    grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 1>(denoisedImage, "denoised", mapOut, minValue, maxValue);
   }
 
   // Apply inpainting
@@ -164,11 +195,15 @@ bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
     // Navier-Stokes by default
     cv::inpaint(originalImage, mask, filledImage, radiusInPixels, cv::INPAINT_NS);
   }
-  
 
-  grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 3>(filledImage, outputLayer_, mapOut, minValue, maxValue);
-  grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 3>(denoisedImage, "denoised", mapOut, minValue, maxValue);
-  // mapOut.erase("inpaint_mask");
+  // Add inpainted layer  
+  grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 1>(filledImage, outputLayer_, mapOut, minValue, maxValue);
+  mapOut.erase("inpaint_mask");
+
+  // Timing
+  auto toc = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
+  ROS_DEBUG_STREAM("[DenoiseAndInpaintFilter] Process time: " << elapsedTime.count() << " ms");
 
   return true;
 }

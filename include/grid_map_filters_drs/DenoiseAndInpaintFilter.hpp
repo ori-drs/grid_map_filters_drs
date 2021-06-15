@@ -76,7 +76,13 @@ class DenoiseAndInpaintFilter : public filters::FilterBase<T> {
   //! Denoising type
   std::string denoisingType_;
 
-  
+  //! Total variation parameters
+  double totalVariationLambda_;
+  int totalVariationIters_;
+
+  //! Non local parameters
+  double nonLocalStrength_;
+  int nonLocalSearchWindowSize_;
 };
 
 } /* namespace */

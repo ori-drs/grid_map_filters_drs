@@ -1,7 +1,7 @@
 /*
  * FastNormalsVectorFilter.cpp
  *
- *  Fast normal computation using Sobel filters
+ *  Fast normal computation using Sobel/Scharr filters
  * 
  *  Author: Matias Mattamala
  */
@@ -35,31 +35,31 @@ bool FastNormalsVectorFilter<T>::configure()
   // Load Parameters
   // Input layer to be processed
   if (!FilterBase<T>::getParam(std::string("input_layer"), inputLayer_)) {
-    ROS_ERROR("FastNormalsVectorFilter filter did not find parameter `input_layer`.");
+    ROS_ERROR("[FastNormalsVectorFilter] did not find parameter `input_layer`.");
     return false;
   }
-  ROS_DEBUG("FastNormalsVectorFilter filter input_layers_prefix = %s.", inputLayer_.c_str());
+  ROS_DEBUG("[FastNormalsVectorFilter] input_layers_prefix = %s.", inputLayer_.c_str());
 
   // Output layers to be processed
   if (!FilterBase<T>::getParam(std::string("output_layers_prefix"), outputLayersPrefix_)) {
-    ROS_ERROR("FastNormalsVectorFilter filter did not find parameter `output_layers_prefix`.");
+    ROS_ERROR("[FastNormalsVectorFilter] did not find parameter `output_layers_prefix`.");
     return false;
   }
-  ROS_DEBUG("FastNormalsVectorFilter filter output_layers_prefix = %s.", outputLayersPrefix_.c_str());
+  ROS_DEBUG("[FastNormalsVectorFilter] output_layers_prefix = %s.", outputLayersPrefix_.c_str());
 
   // Radius to smooth the input layer
   if (!FilterBase<T>::getParam(std::string("input_smoothing_radius"), inputSmoothingRadius_)) {
-    ROS_ERROR("FastNormalsVectorFilter filter did not find parameter `input_smoothing_radius`.");
+    ROS_ERROR("[FastNormalsVectorFilter] did not find parameter `input_smoothing_radius`.");
     return false;
   }
-  ROS_DEBUG("FastNormalsVectorFilter filter output_layers_prefix = %f.", inputSmoothingRadius_);
+  ROS_DEBUG("[FastNormalsVectorFilter] output_layers_prefix = %f.", inputSmoothingRadius_);
 
   // Radius to smooth the normal layers
   if (!FilterBase<T>::getParam(std::string("normals_smoothing_radius"), normalsSmoothingRadius_)) {
-    ROS_ERROR("FastNormalsVectorFilter filter did not find parameter `normals_smoothing_radius`.");
+    ROS_ERROR("[FastNormalsVectorFilter] did not find parameter `normals_smoothing_radius`.");
     return false;
   }
-  ROS_DEBUG("FastNormalsVectorFilter filter output_layers_prefix = %f.", normalsSmoothingRadius_);
+  ROS_DEBUG("[FastNormalsVectorFilter] output_layers_prefix = %f.", normalsSmoothingRadius_);
 
   // Preallocate normal layer names
   xOutputLayer_ = outputLayersPrefix_ + "x";
@@ -78,7 +78,7 @@ bool FastNormalsVectorFilter<T>::update(const T& mapIn, T& mapOut)
 
   // Check if layer exists.
   if (!mapOut.exists(inputLayer_)) {
-    ROS_ERROR("Check your layer type! Type %s does not exist", inputLayer_.c_str());
+    ROS_ERROR("[FastNormalsVectorFilter] Check your layer type! Type %s does not exist", inputLayer_.c_str());
     return false;
   }
 
@@ -111,8 +111,6 @@ bool FastNormalsVectorFilter<T>::update(const T& mapIn, T& mapOut)
   // cv::Sobel(cvLayer, cvGradientsY, -1, 1, 0, 3);
   cv::Scharr(cvLayer, cvGradientsX, CV_32F, 0, 1, 3);
   cv::Scharr(cvLayer, cvGradientsY, CV_32F, 1, 0, 3);
-  // cvGradientsX*=resolution;
-  // cvGradientsY*=resolution;
   cvGradientsX/=4;
   cvGradientsY/=4;
 
