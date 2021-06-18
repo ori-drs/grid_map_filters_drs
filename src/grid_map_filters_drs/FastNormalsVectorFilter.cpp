@@ -122,6 +122,8 @@ bool FastNormalsVectorFilter<T>::update(const T& mapIn, T& mapOut)
 
   grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, 
                                                   minValue, maxValue, cvLayer);
+  cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
+  cvLayer.convertTo(cvLayer, CV_32F);
 
   // Pre smoothing
   if(usePreSmoothing_) {
