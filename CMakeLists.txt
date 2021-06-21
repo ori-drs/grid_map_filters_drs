@@ -79,6 +79,7 @@ include_directories(
 # Files
 set(FILTERS_SRC   src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
                   src/grid_map_filters_drs/GeodesicDistanceField2dFilter.cpp
+                  src/grid_map_filters_drs/GeodesicFieldFilter.cpp
                   src/grid_map_filters_drs/NanFillerFilter.cpp
                   src/grid_map_filters_drs/ChangeNormalsFrameFilter.cpp
                   src/grid_map_filters_drs/FastNormalsVectorFilter.cpp

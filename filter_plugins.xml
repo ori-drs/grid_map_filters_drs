@@ -10,6 +10,11 @@
         Computes a Geodesic Distance field from a layer using a given threshold
       </description>
     </class>
+    <class name="gridMapFiltersDrs/GeodesicFieldFilter" type="grid_map::GeodesicFieldFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Computes a Geodesic Distance field from a layer using a given threshold
+      </description>
+    </class>
     <class name="gridMapFiltersDrs/NanFillerFilter" type="grid_map::NanFillerFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
       <description>
         Fills NaN values using a fixed value or min/max
