@@ -177,9 +177,9 @@ bool FastNormalsVectorFilter<T>::update(const T& mapIn, T& mapOut)
   cv::sqrt(sqGradientsX + sqGradientsY + normalZ*normalZ, normNormal);
 
   // Normalize
-  cvGradientsX /= normNormal;
-  cvGradientsY /= normNormal;
-  cvGradientsZ /= normNormal;
+  cvGradientsX /= (normNormal + std::numeric_limits<float>::epsilon());
+  cvGradientsY /= (normNormal + std::numeric_limits<float>::epsilon());
+  cvGradientsZ /= (normNormal + std::numeric_limits<float>::epsilon());
 
   // Add layers
   addMatAsLayer(cvLayer, "normals_debug_input", mapOut);

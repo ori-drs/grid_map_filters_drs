@@ -107,8 +107,8 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::Mat cvGradientsZ(cvSdf.size(), cvSdf.type(), cv::Scalar(0.0));
   cv::Sobel(cvSdf, cvGradientsX, -1, 0, 1, 3);
   cv::Sobel(cvSdf, cvGradientsY, -1, 1, 0, 3);
-  cvGradientsX*=resolution;
-  cvGradientsY*=resolution;
+  // cvGradientsX*=resolution;
+  // cvGradientsY*=resolution;
 
   if(normalizeGradients_) {
     // Compute norm
@@ -118,10 +118,9 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
     cv::pow(cvGradientsY, 2, sqGradientsY);
     cv::Mat normNormal;
     cv::sqrt(sqGradientsX + sqGradientsY, normNormal);
-    
-    // Normalize
-    cvGradientsX /= normNormal;
-    cvGradientsY /= normNormal;
+
+    cvGradientsX /= (normNormal + std::numeric_limits<float>::epsilon());
+    cvGradientsY /= (normNormal + std::numeric_limits<float>::epsilon());
   }
 
   // Some normalization to ease visualization

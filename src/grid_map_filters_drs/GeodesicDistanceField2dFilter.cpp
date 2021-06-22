@@ -244,8 +244,8 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
     cv::sqrt(sqGradientsX + sqGradientsY, normNormal);
     
     // Normalize
-    cvGradientsX /= normNormal;
-    cvGradientsY /= normNormal;
+    cvGradientsX /= (normNormal + std::numeric_limits<float>::epsilon());
+    cvGradientsY /= (normNormal + std::numeric_limits<float>::epsilon());
   }
 
   // Add layers
