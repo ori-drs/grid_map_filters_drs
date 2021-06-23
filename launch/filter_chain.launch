@@ -1,4 +1,6 @@
 <launch>
+  <arg name="suffix"                default=""/>
+  <arg name="visualizations"        default="true"/>
   <arg name="input_topic"           default="/elevation_mapping/elevation_map_raw"/>
   <arg name="output_topic"          default="/elevation_mapping/elevation_map_filtered"/>
   <arg name="filter_chain_config"   default="$(find grid_map_filters_drs)/config/filter_chain_example.yaml"/>
@@ -8,7 +10,7 @@
   <arg     if="$(arg debug)"        name="launch_prefix" value="gdb -ex run --args" />
 
   <!-- Elevation map filter node. -->
-  <node pkg="grid_map_filters_drs" type="grid_map_filter_drs_node" name="elevation_map_filter" output="screen" launch-prefix="$(arg launch_prefix)">
+  <node pkg="grid_map_filters_drs" type="grid_map_filter_drs_node" name="elevation_map_filter$(arg suffix)" output="screen" launch-prefix="$(arg launch_prefix)">
     <!-- Input topic -->
     <param name="input_topic" value="$(arg input_topic)" />
     <!-- Output topic -->
@@ -19,7 +21,7 @@
   </node>
 
   <!-- Launch the grid map visualizer. -->
-  <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
+  <node if="$(arg visualizations)" pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
     <!-- Input topic -->
     <param name="grid_map_topic" value="$(arg output_topic)" />
 
