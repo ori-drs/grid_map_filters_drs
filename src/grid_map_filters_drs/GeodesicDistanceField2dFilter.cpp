@@ -288,6 +288,7 @@ grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gri
   // If not traversable, we need to find a new candidate attractor
   if(!traversable) {
     double radius = gridMap.getSize()(0) * gridMap.getResolution(); // meters
+    // ROS_WARN_STREAM("attractor spiral radius: " << radius);
 
     for (grid_map::SpiralIterator iterator(gridMap, closestAttractor, radius); !iterator.isPastEnd(); ++iterator) {
       if(gridMap.isValid(*iterator, freeSpaceLayer_)) {
