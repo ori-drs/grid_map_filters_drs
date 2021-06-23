@@ -40,5 +40,10 @@
         Improved version of the grid_map_cv inpaint filter that adds more options and also enables pre-denoising
       </description>
     </class>
+    <class name="gridMapFiltersDrs/BaseHeightThresholdFilter" type="grid_map::BaseHeightThresholdFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Applies a threshold on a layer when transformed to a given frame
+      </description>
+    </class>
   </library>
 </class_libraries>
