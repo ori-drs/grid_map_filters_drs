@@ -118,6 +118,13 @@ bool DenoiseAndInpaintFilter<T>::configure() {
   }
   ROS_DEBUG("[DenoiseAndInpaintFilter] non_local_search_window = %i.", nonLocalSearchWindowSize_);
 
+  // Bilateral averaging radius
+  bilateralWindowSize_ = 20;
+  if (!FilterBase < T > ::getParam(std::string("bilateral_window_size"), bilateralWindowSize_)) {
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `bilateral_window_size`. Using default %i", bilateralWindowSize_);
+  }
+  ROS_DEBUG("[DenoiseAndInpaintFilter] bilateral_window_size = %i.", bilateralWindowSize_);
+
   return true;
 }
 
@@ -173,6 +180,9 @@ bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
     
     } else if(denoisingType_ == "median") {
       cv::medianBlur(originalImage, denoisedImage, radiusInPixels);
+
+    } else if(denoisingType_ == "bilateral") {
+      cv::bilateralFilter(originalImage, denoisedImage, -1, bilateralWindowSize_, radiusInPixels);
     
     } else {
       ROS_WARN_STREAM("[DenoiseAndInpaintFilter] denoising_type option [" << denoisingType_ << "] not supported. Will not apply any deoising");

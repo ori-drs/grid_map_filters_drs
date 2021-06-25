@@ -83,6 +83,9 @@ class DenoiseAndInpaintFilter : public filters::FilterBase<T> {
   //! Non local parameters
   double nonLocalStrength_;
   int nonLocalSearchWindowSize_;
+
+  //! Bilateral filtering
+  double bilateralWindowSize_;
 };
 
 } /* namespace */
