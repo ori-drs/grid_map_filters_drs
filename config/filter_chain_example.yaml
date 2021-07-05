@@ -23,6 +23,16 @@ grid_map_filters:
       denoising_radius: 0.15 # m
       denoising_type: total_variation # 'total_variation', 'non_local', 'gaussian', and 'median' supported
 
+  # Inpainting (radial)
+  - name: inpaint_radially
+    type: gridMapFiltersDrs/RadialInpaintFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_inpainted_radially
+      radius: 0.15 # in m
+      pre_denoising: true # enables denoising before inpainting
+      denoising_radius: 0.15 # m
+
   # # GP Inpainting
   # - name: gp_inpainting
   #   type: gridMapFiltersDrs/GaussianProcessInpaintFilter

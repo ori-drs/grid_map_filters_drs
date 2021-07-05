@@ -86,6 +86,7 @@ set(FILTERS_SRC   src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
                   src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
                   src/grid_map_filters_drs/FastNormalsVectorFilter.cpp
                   src/grid_map_filters_drs/DenoiseAndInpaintFilter.cpp
+                  src/grid_map_filters_drs/RadialInpaintFilter.cpp
 )
 
 if (limbo_FOUND)
