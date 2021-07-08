@@ -96,6 +96,7 @@ bool RadialInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
   // Add new layer to the elevation map.
   mapOut = mapIn;
   mapOut.add(outputLayer_);
+  mapOut.add("elevation_original", mapOut.get("elevation"));
 
   //Convert elevation layer to OpenCV image to fill in holes.
   //Get the inpaint mask (nonzero pixels indicate where values need to be filled in).
@@ -103,6 +104,9 @@ bool RadialInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
 
   mapOut.setBasicLayers(std::vector<std::string>());
   for (grid_map::GridMapIterator iterator(mapOut); !iterator.isPastEnd(); ++iterator) {
+    if (mapOut.at("upper_bound", *iterator) - mapOut.at("lower_bound", *iterator) > 0.1) {
+	    mapOut.at(inputLayer_, *iterator) = std::numeric_limits<double>::quiet_NaN();
+    }
     if (!mapOut.isValid(*iterator, inputLayer_)) {
       mapOut.at("inpaint_mask", *iterator) = 1.0;
     }
