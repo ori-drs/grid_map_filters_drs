@@ -41,7 +41,7 @@ find_package(OpenCV REQUIRED)
 # Eigen3
 find_package(Eigen3 REQUIRED)
 # Limbo for Gaussian Process regression (optional)
-find_package(limbo)
+find_package(limbo CONFIG QUIET)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -92,6 +92,8 @@ set(FILTERS_SRC   src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
 if (limbo_FOUND)
   set(FILTERS_SRC ${FILTERS_SRC}
                   src/grid_map_filters_drs/GaussianProcessInpaintFilter.cpp)
+else()
+  message(WARNING "limbo not found - won't build GP Inpaint Filter. To enable GP Inpaint Filter, clone https://github.com/ori-drs/limbo into your workspace")
 endif()
 
 ## Declare elevation_map_filters_drs library
