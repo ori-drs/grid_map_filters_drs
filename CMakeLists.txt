@@ -77,15 +77,20 @@ include_directories(
 )
 
 # Files
-set(FILTERS_SRC   src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
-                  src/grid_map_filters_drs/GeodesicDistanceField2dFilter.cpp
-                  src/grid_map_filters_drs/GeodesicFieldFilter.cpp
-                  src/grid_map_filters_drs/NanFillerFilter.cpp
-                  src/grid_map_filters_drs/ChangeNormalsFrameFilter.cpp
-                  src/grid_map_filters_drs/BaseHeightThresholdFilter.cpp
-                  src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
-                  src/grid_map_filters_drs/FastNormalsVectorFilter.cpp
-                  src/grid_map_filters_drs/DenoiseAndInpaintFilter.cpp
+set(FILTERS_SRC src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
+                src/grid_map_filters_drs/GeodesicDistanceField2dFilter.cpp
+                src/grid_map_filters_drs/GeodesicFieldFilter.cpp
+                src/grid_map_filters_drs/NanFillerFilter.cpp
+                src/grid_map_filters_drs/ChangeNormalsFrameFilter.cpp
+                src/grid_map_filters_drs/BaseHeightThresholdFilter.cpp
+                src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
+                src/grid_map_filters_drs/FastNormalsVectorFilter.cpp
+                src/grid_map_filters_drs/DenoiseAndInpaintFilter.cpp
+                
+)
+
+set(UTILS_SRC src/grid_map_filters_drs/utils/timer.cpp
+              src/grid_map_filters_drs/utils/profiler.cpp
 )
 
 if (limbo_FOUND)
@@ -94,7 +99,8 @@ if (limbo_FOUND)
 endif()
 
 ## Declare elevation_map_filters_drs library
-add_library(${PROJECT_NAME} ${FILTERS_SRC})
+add_library(${PROJECT_NAME} ${FILTERS_SRC}
+                            ${UTILS_SRC})
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -103,7 +109,8 @@ target_link_libraries(${PROJECT_NAME}
 
 # Declare elevation_map_filter_drs node
 add_executable(grid_map_filter_drs_node   src/elevation_map_filter/elevation_map_filter_node.cpp
-                                          src/elevation_map_filter/elevation_map_filter.cpp)
+                                          src/elevation_map_filter/elevation_map_filter.cpp
+                                          ${UTILS_SRC})
 target_link_libraries(grid_map_filter_drs_node  ${catkin_LIBRARIES}
                                                 ${OpenCV_LIBS})
 

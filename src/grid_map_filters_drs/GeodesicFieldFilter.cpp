@@ -28,6 +28,9 @@ GeodesicFieldFilter<T>::~GeodesicFieldFilter()
 template<typename T>
 bool GeodesicFieldFilter<T>::configure()
 {
+  // Setup profiler
+  profiler_ptr_ = std::make_shared<Profiler>("GeodesicFieldFilter");
+
   // Initialize node handle
   nodeHandle_ = ros::NodeHandle("~geodesic_distance_filter");
 
@@ -139,7 +142,7 @@ void GeodesicFieldFilter<T>::attractorCallback(const geometry_msgs::PoseStampedC
 
 template<typename T>
 bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
-  auto tic = std::chrono::high_resolution_clock::now();
+  profiler_ptr_->startEvent("0.update");
 
   // Copy and fix indexing
   mapOut = mapIn;
@@ -230,9 +233,8 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   mapOut.setBasicLayers({});
 
   // Timing
-  auto toc = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
-  ROS_DEBUG_STREAM("[GeodesicFieldFilter] Process time: " << elapsedTime.count() << " ms");
+  profiler_ptr_->endEvent("0.update");
+  ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
   
   return true;
 }

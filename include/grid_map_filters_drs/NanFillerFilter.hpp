@@ -8,6 +8,7 @@
 #pragma once
 
 #include <filters/filter_base.hpp>
+#include <grid_map_filters_drs/utils/profiler.hpp>
 #include <string>
 #include <vector>
 
@@ -56,7 +57,10 @@ class NanFillerFilter : public filters::FilterBase<T>
   std::string setTo_;
 
   //! Value to set the nan values (if selected)
-  double value_; 
+  double value_;
+
+  //! Profiler
+  std::shared_ptr<Profiler> profiler_ptr_;
 };
 
 } /* namespace */

@@ -31,7 +31,11 @@ DenoiseAndInpaintFilter<T>::~DenoiseAndInpaintFilter() {
 }
 
 template<typename T>
-bool DenoiseAndInpaintFilter<T>::configure() {
+bool DenoiseAndInpaintFilter<T>::configure()
+{
+  // Setup profiler
+  profiler_ptr_ = std::make_shared<Profiler>("DenoiseAndInpaintFilter");
+
   // Input layer
   if (!FilterBase < T > ::getParam(std::string("input_layer"), inputLayer_)) {
     ROS_ERROR("[DenoiseAndInpaintFilter] filter did not find parameter `input_layer`.");
@@ -121,9 +125,9 @@ bool DenoiseAndInpaintFilter<T>::configure() {
   // Bilateral averaging radius
   bilateralWindowSize_ = 20;
   if (!FilterBase < T > ::getParam(std::string("bilateral_window_size"), bilateralWindowSize_)) {
-    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `bilateral_window_size`. Using default %i", bilateralWindowSize_);
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `bilateral_window_size`. Using default %f", bilateralWindowSize_);
   }
-  ROS_DEBUG("[DenoiseAndInpaintFilter] bilateral_window_size = %i.", bilateralWindowSize_);
+  ROS_DEBUG("[DenoiseAndInpaintFilter] bilateral_window_size = %f.", bilateralWindowSize_);
 
   return true;
 }
@@ -131,7 +135,7 @@ bool DenoiseAndInpaintFilter<T>::configure() {
 template<typename T>
 bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
 
-  auto tic = std::chrono::high_resolution_clock::now();
+  profiler_ptr_->startEvent("0.update");
 
   // Add new layer to the elevation map.
   mapOut = mapIn;
@@ -211,9 +215,8 @@ bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
   mapOut.erase("inpaint_mask");
 
   // Timing
-  auto toc = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
-  ROS_DEBUG_STREAM("[DenoiseAndInpaintFilter] Process time: " << elapsedTime.count() << " ms");
+  profiler_ptr_->endEvent("0.update");
+  ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
 
   return true;
 }

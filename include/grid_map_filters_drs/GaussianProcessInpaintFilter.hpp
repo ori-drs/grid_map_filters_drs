@@ -8,6 +8,7 @@
 #pragma once
 
 #include <filters/filter_base.hpp>
+#include <grid_map_filters_drs/utils/profiler.hpp>
 #include <string>
 #include <vector>
 #include <limbo/limbo.hpp>
@@ -91,7 +92,10 @@ class GaussianProcessInpaintFilter : public filters::FilterBase<T>
   std::string outputLayerMean_;
 
   //! Skips cells to reduce computation
-  int subsampleSkip_; 
+  int subsampleSkip_;
+
+  //! Profiler
+  std::shared_ptr<Profiler> profiler_ptr_;
 };
 
 } /* namespace */

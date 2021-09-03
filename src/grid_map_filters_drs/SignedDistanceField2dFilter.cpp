@@ -8,6 +8,7 @@
 
 
 #include <grid_map_filters_drs/SignedDistanceField2dFilter.hpp>
+#include <time.h>
 
 using namespace filters;
 
@@ -26,6 +27,9 @@ SignedDistanceField2dFilter<T>::~SignedDistanceField2dFilter()
 template<typename T>
 bool SignedDistanceField2dFilter<T>::configure()
 {
+  // Setup profiler
+  profiler_ptr_ = std::make_shared<Profiler>("SignedDistanceField2dFilter");
+
   // Load Parameters
   // Input layer to be processed
   if (!FilterBase<T>::getParam(std::string("input_layer"), inputLayer_)) {
@@ -60,7 +64,9 @@ bool SignedDistanceField2dFilter<T>::configure()
 
 template<typename T>
 bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
-  auto tic = std::chrono::high_resolution_clock::now();
+  // auto tic = std::chrono::high_resolution_clock::now();
+  profiler_ptr_->startEvent("0.update");
+  // clock_t start_t = clock();
 
   // Copy and fix indexing
   mapOut = mapIn;
@@ -75,6 +81,7 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   // Get resolution
   double resolution = mapOut.getResolution();
 
+  profiler_ptr_->startEvent("1.preprocess");
   // Convert selected layer to OpenCV image
   cv::Mat cvLayer;
   const float minValue = mapOut.get(inputLayer_).minCoeffOfFinites();
@@ -90,14 +97,18 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::threshold(cvLayer, cvObstacleSpaceMask, 255*threshold_, 255, cv::THRESH_BINARY);
   cvObstacleSpaceMask.convertTo(cvObstacleSpaceMask, CV_8UC1);
   cv::bitwise_not(cvObstacleSpaceMask, cvFreeSpaceMask);
+  profiler_ptr_->endEvent("1.preprocess");
 
   // Compute SDF
+  profiler_ptr_->startEvent("2.sdf_computation");
   cv::Mat cvSdfFreeSpace;
   cv::Mat cvSdfObstacleSpace;
   cv::distanceTransform(cvFreeSpaceMask, cvSdfFreeSpace, cv::DIST_L2, 3);         // TODO: parametrize kernel and distance metric
   cv::distanceTransform(cvObstacleSpaceMask, cvSdfObstacleSpace, cv::DIST_L2, 3); // TODO: parametrize kernel and distance metric
   cv::Mat cvSdf = cvSdfObstacleSpace - cvSdfFreeSpace;
+  profiler_ptr_->endEvent("2.sdf_computation");
   
+  profiler_ptr_->startEvent("3.sdf_gradients");
   // Smooth SDF 
   cv::GaussianBlur(cvSdf, cvSdf, cv::Size(5, 5), 0);
 
@@ -126,21 +137,29 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   // Some normalization to ease visualization
   cvObstacleSpaceMask/=255.0;
   cvFreeSpaceMask/=255.0;
+  profiler_ptr_->endEvent("3.sdf_gradients");
 
   // Add layers
+  profiler_ptr_->startEvent("4.sdf_add_layers");
   addMatAsLayer(cvSdf, outputLayer_, mapOut, resolution);
-  addMatAsLayer(cvObstacleSpaceMask, outputLayer_ + "_obstacle_space", mapOut);
-  addMatAsLayer(cvFreeSpaceMask, outputLayer_  + "_free_space", mapOut);
+  // addMatAsLayer(cvObstacleSpaceMask, outputLayer_ + "_obstacle_space", mapOut);
+  // addMatAsLayer(cvFreeSpaceMask, outputLayer_  + "_free_space", mapOut);
   addMatAsLayer(cvGradientsX, outputLayer_ + "_gradient_x", mapOut);
   addMatAsLayer(cvGradientsY, outputLayer_ + "_gradient_y", mapOut);
   addMatAsLayer(cvGradientsZ, outputLayer_ + "_gradient_z", mapOut);
+  profiler_ptr_->endEvent("4.sdf_add_layers");
 
   mapOut.setBasicLayers({});
 
   // Timing
-  auto toc = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
-  ROS_DEBUG_STREAM("[SignedDistanceField2dFilter] Process time: " << elapsedTime.count() << " ms");
+  // clock_t end_t = clock();
+  // double total_t = ((double)(end_t - start_t)) / CLOCKS_PER_SEC;
+  profiler_ptr_->endEvent("0.update");
+  ROS_DEBUG_STREAM(profiler_ptr_->getReport());
+  // auto toc = std::chrono::high_resolution_clock::now();
+  // double elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(toc - tic).count()/1000;
+  // ROS_DEBUG_STREAM("[SignedDistanceField2dFilter] Process time: " << elapsedTime << " ms");
+  // ROS_DEBUG_STREAM("[SignedDistanceField2dFilter] Process time (clock_t): " << total_t*1000 << " ms");
 
   return true;
 }

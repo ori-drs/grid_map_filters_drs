@@ -8,6 +8,7 @@
 #pragma once
 
 #include <filters/filter_base.hpp>
+#include <grid_map_filters_drs/utils/profiler.hpp>
 #include <string>
 #include <vector>
 
@@ -121,6 +122,9 @@ class GeodesicFieldFilter : public filters::FilterBase<T>
   ros::Subscriber attractorSubscriber_;
   ros::Subscriber attractorSubscriberRviz_;
   ros::Subscriber attractorSubscriberRviz2_;
+
+  //! Profiler
+  std::shared_ptr<Profiler> profiler_ptr_;
 };
 
 } /* namespace */
