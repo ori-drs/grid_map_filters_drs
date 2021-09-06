@@ -72,6 +72,7 @@ private:
     bool isRunning_;  // Flag to check if the event started
 
     // Logging of measurements
+    std::vector<double> measurementsTimestamp_; // All the measurements collected so far
     std::vector<double> measurements_; // All the measurements collected so far
 };
 

@@ -7,9 +7,8 @@
 
 class Timer
 {
-  using Clock = std::chrono::high_resolution_clock;
-
 public:
+  using Clock = std::chrono::high_resolution_clock;
   using Seconds  = std::chrono::duration<double, std::ratio<1> >;
   using Millisecs = std::chrono::duration<double, std::milli>;
   using Microsecs = std::chrono::duration<double, std::micro>;
@@ -32,6 +31,9 @@ public:
 
   // Reset timer
   void reset();
+
+  // Get timestamp
+  static double now();
 
   // Return elapsed time since the timer was created/reset
   double elapsed(Units units = Units::no_preference) const;

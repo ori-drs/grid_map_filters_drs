@@ -32,6 +32,11 @@ void Timer::reset()
   timer_ = Clock::now();
 }
 
+double Timer::now() {
+  // From https://stackoverflow.com/a/55021025/3570362
+  return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count() * 1e-6;
+}
+
 double Timer::elapsed(Timer::Units units) const
 {
   Seconds dt = std::chrono::duration_cast<Seconds>(Clock::now() - timer_);

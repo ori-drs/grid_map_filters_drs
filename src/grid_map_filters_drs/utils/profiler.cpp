@@ -18,6 +18,7 @@ Profiler::Event::Event(std::string name,
     alpha_ = alpha;
     isRunning_ = false;
     measurements_.reserve(Profiler::BUFFER_SIZE);
+    measurementsTimestamp_.reserve(Profiler::BUFFER_SIZE);
 }
 
 Profiler::Event::~Event()
@@ -39,8 +40,8 @@ Profiler::Event::~Event()
         << "# Units are [" << timer_.getReadableUnits() << "]"<< std::endl;
 
     // Write data
-    for(auto &dt : measurements_){
-        log << std::setprecision(16) << dt << std::endl;
+    for(size_t i=0; i<measurements_.size(); i++){
+        log << std::setprecision(16) << i << " " <<  measurementsTimestamp_.at(i) << " " << measurements_.at(i) << std::endl;
     }
     log.close();
 }
@@ -59,6 +60,7 @@ void Profiler::Event::end()
 {
     double dt = timer_.elapsed();
     // Save measurement
+    measurementsTimestamp_.push_back(Timer::now());
     measurements_.push_back(dt);
     // Update moving average
     updateStatistics(dt);
