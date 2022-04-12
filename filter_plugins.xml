@@ -45,5 +45,11 @@
         Applies a threshold on a layer when transformed to a given frame
       </description>
     </class>
+
+    <class name="gridMapFiltersDrs/LearnedMotionCostsFilter" type="grid_map::LearnedMotionCostsFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Request a cost computed from the learned motion cost server (gpu_path_optimizer)
+      </description>
+    </class>
   </library>
 </class_libraries>
