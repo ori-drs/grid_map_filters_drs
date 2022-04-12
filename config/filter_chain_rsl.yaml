@@ -23,13 +23,19 @@ grid_map_filters:
       denoising_radius: 0.15 # m
       denoising_type: total_variation # 'total_variation', 'non_local', 'gaussian', and 'median' supported
   
-  - name: learned_traversability
+  - name: learned_risk
     type: gridMapFiltersDrs/LearnedMotionCostsFilter
     params:
       input_layer: elevation_inpainted
-      output_layer: traversability_learned
+      output_layer: risk_learned
       cost_layer: risk
       service_name: /traversability_server/compute_traversability
+  
+  - name: traversability_learned
+    type: gridMapFilters/MathExpressionFilter
+    params:
+      output_layer: traversability_learned
+      expression: 1.0 - (risk_learned / (max(risk_learned) - min(risk_learned)) + min(risk_learned))
   
   # Compute surface normals (fast)
   # Default positive vector is z axis
