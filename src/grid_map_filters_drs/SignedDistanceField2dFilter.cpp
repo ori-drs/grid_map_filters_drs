@@ -109,15 +109,16 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->endEvent("2.sdf_computation");
   
   profiler_ptr_->startEvent("3.sdf_gradients");
+  cv::Mat cvSdfGrad = cvSdf.clone();
   // Smooth SDF 
-  cv::GaussianBlur(cvSdf, cvSdf, cv::Size(5, 5), 0);
+  cv::GaussianBlur(cvSdf, cvSdfGrad, cv::Size(5, 5), 0);
 
   // Compute gradients
   cv::Mat cvGradientsX;
   cv::Mat cvGradientsY;
-  cv::Mat cvGradientsZ(cvSdf.size(), cvSdf.type(), cv::Scalar(0.0));
-  cv::Sobel(cvSdf, cvGradientsX, -1, 0, 1, 3);
-  cv::Sobel(cvSdf, cvGradientsY, -1, 1, 0, 3);
+  cv::Mat cvGradientsZ(cvSdfGrad.size(), cvSdfGrad.type(), cv::Scalar(0.0));
+  cv::Sobel(cvSdfGrad, cvGradientsX, -1, 0, 1, 3);
+  cv::Sobel(cvSdfGrad, cvGradientsY, -1, 1, 0, 3);
   // cvGradientsX*=resolution;
   // cvGradientsY*=resolution;
 

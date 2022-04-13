@@ -1,0 +1,33 @@
+<launch>
+  <arg name="suffix"                default=""/>
+  <arg name="visualizations"        default="false"/>
+  <arg name="input_topic"           default="/elevation_mapping/elevation_map_raw"/>
+  <arg name="output_topic"          default="/elevation_mapping/elevation_map_filtered"/>
+  <arg name="wifi_topic"          default="/elevation_mapping/elevation_map_wifi"/>
+
+  <arg name="filter_chain_config"   default="$(find grid_map_filters_drs)/config/filter_chain_example.yaml"/>
+  <arg name="wifi_config"           default="$(find grid_map_filters_drs)/config/filter_chain_wifi.yaml"/>
+  <arg name="visualizations_config" default="$(find grid_map_filters_drs)/config/visualizations_example.yaml"/>
+  
+  <arg name="debug"                 default="false"/>
+
+     <!-- Launch elevation map filters -->
+  <include file="$(find grid_map_filters_drs)/launch/filter_chain.launch">
+    <arg name="input_topic"           value="$(arg input_topic)"/>
+    <arg name="output_topic"          value="$(arg output_topic)"/>
+    <arg name="filter_chain_config"   value="$(arg filter_chain_config)"/>
+    <arg name="visualizations_config" value="$(arg visualizations_config)"/>
+    <arg name="debug"                 value="$(arg debug)"/>
+  </include>
+
+  <include file="$(find grid_map_filters_drs)/launch/filter_chain.launch">
+    <arg name="suffix"                value="_wifi"/>
+    <arg name="input_topic"           value="$(arg output_topic)"/>
+    <arg name="output_topic"          value="$(arg wifi_topic)"/>
+    <arg name="filter_chain_config"   value="$(arg wifi_config)"/>
+    <arg name="visualizations"        value="false"/>
+  </include>
+
+
+
+</launch>

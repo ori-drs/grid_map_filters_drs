@@ -49,21 +49,6 @@ bool GeodesicFieldFilter<T>::configure()
   }
   ROS_DEBUG("Geodesic Distance 2D filter output_layer = %s.", outputLayer_.c_str());
 
-  // Option to smooth the field
-  // Read flag to binarize defining traversable and non traversable areas
-  if (!filters::FilterBase<T>::getParam(std::string("use_field_smoothing"), fieldSmoothing_)) {
-    ROS_ERROR("Geodesic Distance 2D filter did not find parameter `use_field_smoothing`.");
-    return false;
-  }
-  ROS_DEBUG("Geodesic Distance 2D filter use_field_smoothing = %s.", (fieldSmoothing_? "true" : "false"));
-
-  // Smoothing radius
-  if (!filters::FilterBase<T>::getParam(std::string("field_smoothing_radius"), fieldSmoothingRadius_)) {
-    ROS_ERROR("Geodesic Distance 2D filter did not find parameter `field_smoothing_radius`.");
-    return false;
-  }
-  ROS_DEBUG("Geodesic Distance 2D filter field_smoothing_radius = %f.", fieldSmoothingRadius_);
-
   // Attractor subscriber topic
   if (!FilterBase<T>::getParam(std::string("attractor_topic"), attractorTopic_)) {
     ROS_ERROR("Geodesic Distance 2D filter did not find parameter 'attractor_topic'.");
@@ -150,7 +135,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
 
   // Check if layer exists.
   if (!mapOut.exists(inputLayer_)) {
-    ROS_ERROR("Check your threshold types! Type %s does not exist", inputLayer_.c_str());
+    ROS_ERROR("Check your layers! Layer %s does not exist", inputLayer_.c_str());
     return false;
   }
 
@@ -175,23 +160,13 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
   cvLayer.convertTo(cvLayer, CV_32F);
 
-  cvLayer+=0.001;
+  cvLayer+=0.1;
 
   // Preallocate output layer
   cv::Mat cvGeodesicDistance(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
   cv::Mat cvGradientsX(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));;  
   cv::Mat cvGradientsY(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));;
   cv::Mat cvGradientsZ(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
-
-  // Smooth field by applying Gaussian Smoothing
-  // This is similar to the 'saturation' method used in 
-  // FM2 by Javier V. Gomez: https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6582543
-  if(fieldSmoothing_){
-    int radiusInPixels =  std::max((int)std::ceil(fieldSmoothingRadius_ / mapIn.getResolution()), 3); // Minimum kernel of size 3
-    radiusInPixels = (radiusInPixels % 2 == 0)? radiusInPixels + 1 : radiusInPixels;
-
-    cv::GaussianBlur(cvLayer, cvLayer, cv::Size(radiusInPixels, radiusInPixels), 0);
-  }
 
   // Prepare seeds
   std::vector<cv::Point> seeds;

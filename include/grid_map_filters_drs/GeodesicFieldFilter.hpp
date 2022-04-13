@@ -88,13 +88,6 @@ class GeodesicFieldFilter : public filters::FilterBase<T>
   std::string gradientYLayer_;
   std::string gradientZLayer_;
 
-  //! Traversability threshold
-  double threshold_;
-
-  //! Smooth field options
-  double fieldSmoothingRadius_;
-  bool fieldSmoothing_;
-
   //! Attractor position
   grid_map::Position attractorPosition_;
 

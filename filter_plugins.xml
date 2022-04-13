@@ -51,5 +51,11 @@
         Request a cost computed from the learned motion cost server (gpu_path_optimizer)
       </description>
     </class>
+
+    <class name="gridMapFiltersDrs/DeleteAllButFilter" type="grid_map::DeleteAllButFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Deletes all the layers but the selected ones
+      </description>
+    </class>
   </library>
 </class_libraries>
