@@ -1,0 +1,52 @@
+grid_map_filters:
+
+  - name: buffer_normalizer
+    type: gridMapFilters/BufferNormalizerFilter
+
+# Inpainting
+  - name: denoise_inpaint
+    type: gridMapFiltersDrs/DenoiseAndInpaintFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_inpainted
+      radius: 0.1 # in m
+      inpainting_type: ns # 'ns' or 'telea' allowed
+      pre_denoising: true # enables denoising before inpainting
+      denoising_radius: 0.15 # m
+      denoising_type: non_local # 'total_variation', 'non_local', 'gaussian', and 'median' supported
+  
+  # Compute surface normals (fast)
+  # Default positive vector is z axis
+  - name: surface_normals_fast
+    type: gridMapFiltersDrs/FastNormalsVectorFilter
+    params:
+      input_layer: elevation_inpainted
+      output_layers_prefix: normal_
+      use_pre_smoothing: true
+      use_post_smoothing: true
+      pre_smoothing_radius: 0.15 # spatial gaussian filter (in meters)
+      post_smoothing_radius: 0.1 # spatial median filter (in meters)
+  
+  # Compute slope from surface normal.
+  - name: slope
+    type: gridMapFilters/MathExpressionFilter
+    params:
+      output_layer: slope
+      expression: acos(normal_z)
+  
+  # Compute traversability as normalized weighted sum of slope and roughness.
+  - name: traversability
+    type: gridMapFilters/MathExpressionFilter
+    params:
+      output_layer: traversability
+      expression: (1.0 - (slope / 0.6))
+       
+  # Compute obstacles from traversability
+  - name: point_obstacles
+    type: gridMapFiltersDrs/PointObstaclesFilter
+    params:
+      input_layer: traversability
+      output_layer: point_obstacles
+      threshold: 0.2 # lower thresholds are more relaxed and will detect more
+      obstacles_topic: /grid_map_filters_drs/point_obstacles
+      obstacles_frame: odom

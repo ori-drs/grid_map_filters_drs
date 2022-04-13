@@ -45,5 +45,11 @@
         Applies a threshold on a layer when transformed to a given frame
       </description>
     </class>
+
+    <class name="gridMapFiltersDrs/PointObstaclesFilter" type="grid_map::PointObstaclesFilter<grid_map::GridMap>"     base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Extracts point (circular) obstacles from the grid map
+      </description>
+    </class>
   </library>
 </class_libraries>

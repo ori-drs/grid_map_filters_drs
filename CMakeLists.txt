@@ -33,6 +33,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   tf
   tf_conversions
+  costmap_converter
 )
 
 # Libraries dependencies
@@ -63,6 +64,7 @@ catkin_package(
                   eigen_conversions
                   tf
                   tf_conversions
+                  costmap_converter
   DEPENDS OpenCV
 )
 
@@ -86,7 +88,7 @@ set(FILTERS_SRC src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
                 src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
                 src/grid_map_filters_drs/FastNormalsVectorFilter.cpp
                 src/grid_map_filters_drs/DenoiseAndInpaintFilter.cpp
-                
+                src/grid_map_filters_drs/PointObstaclesFilter.cpp
 )
 
 set(UTILS_SRC src/grid_map_filters_drs/utils/timer.cpp
