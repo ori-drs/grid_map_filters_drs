@@ -226,10 +226,10 @@ grid_map::Index GeodesicFieldFilter<T>::getAttractorIndex(const T& gridMap, cons
   gridMap.getIndex(closestAttractor, index);
 
   // // Sanity check
-  // index.x() = std::min(index.x(), gridMap.getSize().x()-1);
-  // index.y() = std::min(index.y(), gridMap.getSize().y()-1);
-  // index.x() = std::max(index.x(), 0);
-  // index.y() = std::max(index.y(), 0);
+  index.x() = std::min(index.x(), gridMap.getSize().x()-1);
+  index.y() = std::min(index.y(), gridMap.getSize().y()-1);
+  index.x() = std::max(index.x(), 0);
+  index.y() = std::max(index.y(), 0);
 
   // // ROS_WARN_STREAM("attractor closest index: " << index(0) << ", " << index(1));
   // bool traversable = gridMap.at(freeSpaceLayer_, index) > 0;

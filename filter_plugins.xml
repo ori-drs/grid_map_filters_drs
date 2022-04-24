@@ -20,6 +20,11 @@
         Fills NaN values using a fixed value or min/max
       </description>
     </class>
+     <class name="gridMapFiltersDrs/NanMaskFilter" type="grid_map::NanMaskFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Generates a layer (mask) from all the nan values
+      </description>
+    </class>
     <class name="gridMapFiltersDrs/ChangeNormalsFrameFilter" type="grid_map::ChangeNormalsFrameFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
       <description>
         Rotate the normals to match a different frame
