@@ -1,0 +1,13 @@
+grid_map_filters:
+      
+  - name: math_traversability
+    type: gridMapFilters/SlidingWindowMathExpressionFilter
+    params:
+      input_layer: traversability
+      output_layer: traversability_dilated
+      expression: minOfFinites(traversability)
+      compute_empty_cells: false
+      edge_handling: crop # options: inside, crop, empty, mean
+      window_size: 5 # in number of cells (optional, default: 3), make sure to make this compatible with the kernel matrix
+    # window_length: 0.05 # instead of window_size, in m
+       
