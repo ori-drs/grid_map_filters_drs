@@ -223,4 +223,7 @@ bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
 
 }/* namespace */
 
+// Explicitly define the specialization for GridMap
+template class grid_map::DenoiseAndInpaintFilter<grid_map::GridMap>;
+// Export the filter.
 PLUGINLIB_EXPORT_CLASS(grid_map::DenoiseAndInpaintFilter<grid_map::GridMap>, filters::FilterBase<grid_map::GridMap>)

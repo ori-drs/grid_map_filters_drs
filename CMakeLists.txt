@@ -33,7 +33,6 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   tf
   tf_conversions
-  gpu_path_optimizer
 )
 
 # Libraries dependencies
@@ -43,6 +42,8 @@ find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 # Limbo for Gaussian Process regression (optional)
 find_package(limbo CONFIG QUIET)
+# FOr learned motion costs
+find_package(gpu_path_optimizer CONFIG QUIET)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -64,7 +65,6 @@ catkin_package(
                   eigen_conversions
                   tf
                   tf_conversions
-                  gpu_path_optimizer
   DEPENDS OpenCV
 )
 
@@ -86,7 +86,6 @@ set(FILTERS_SRC src/grid_map_filters_drs/BaseHeightThresholdFilter.cpp
                 src/grid_map_filters_drs/FastNormalsVectorFilter.cpp
                 src/grid_map_filters_drs/GeodesicDistanceField2dFilter.cpp
                 src/grid_map_filters_drs/GeodesicFieldFilter.cpp
-                src/grid_map_filters_drs/LearnedMotionCostsFilter.cpp
                 src/grid_map_filters_drs/NanFillerFilter.cpp
                 src/grid_map_filters_drs/NanMaskFilter.cpp
                 src/grid_map_filters_drs/RadialInpaintFilter.cpp
@@ -101,7 +100,14 @@ if (limbo_FOUND)
   set(FILTERS_SRC ${FILTERS_SRC}
                   src/grid_map_filters_drs/GaussianProcessInpaintFilter.cpp)
 else()
-  message(WARNING "limbo not found - won't build GP Inpaint Filter. To enable GP Inpaint Filter, clone https://github.com/ori-drs/limbo into your workspace")
+  message(WARNING "limbo not found. Will not build GP Inpaint Filter. To enable GP Inpaint Filter, clone https://github.com/ori-drs/limbo into your workspace")
+endif()
+
+if (gpu_path_optimizer_FOUND)
+  set(FILTERS_SRC ${FILTERS_SRC}
+                  src/grid_map_filters_drs/LearnedMotionCostsFilter.cpp)
+else()
+  message(WARNING "gpu_path_optimizer not found. Will not build LearnedMotionCostsFilter.")
 endif()
 
 ## Declare elevation_map_filters_drs library

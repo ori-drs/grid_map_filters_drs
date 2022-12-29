@@ -24,19 +24,19 @@ grid_map_filters:
       denoising_type: non_local # 'total_variation', 'non_local', 'gaussian', and 'median' supported
       total_variation_lambda: 1.0
 
-  - name: learned_risk
-    type: gridMapFiltersDrs/LearnedMotionCostsFilter
-    params:
-      input_layer: elevation_inpainted
-      output_layer: risk_learned
-      cost_layer: risk
-      service_name: /traversability_server/compute_traversability
+  # - name: learned_risk
+  #   type: gridMapFiltersDrs/LearnedMotionCostsFilter
+  #   params:
+  #     input_layer: elevation_inpainted
+  #     output_layer: risk_learned
+  #     cost_layer: risk
+  #     service_name: /traversability_server/compute_traversability
   
-  - name: traversability_learned
-    type: gridMapFilters/MathExpressionFilter
-    params:
-      output_layer: traversability_learned
-      expression:  1.0 - ((risk_learned - min(risk_learned)) / (max(risk_learned) - min(risk_learned)))
+  # - name: traversability_learned
+  #   type: gridMapFilters/MathExpressionFilter
+  #   params:
+  #     output_layer: traversability_learned
+  #     expression:  1.0 - ((risk_learned - min(risk_learned)) / (max(risk_learned) - min(risk_learned)))
 
   # Inpainting (radial)
   - name: inpaint_radially
@@ -124,7 +124,7 @@ grid_map_filters:
   - name: sdf
     type: gridMapFiltersDrs/SignedDistanceField2dFilter
     params:
-      input_layer: traversability_learned
+      input_layer: traversability_geometric
       output_layer: sdf
       normalize_gradients: true
       threshold: 0.2
@@ -132,24 +132,24 @@ grid_map_filters:
   - name: geodesic
     type: gridMapFiltersDrs/GeodesicDistanceField2dFilter
     params:
-      input_layer: traversability_learned
+      input_layer: traversability_geometric
       output_layer: geodesic
       normalize_gradients: true
-      attractor_topic: /goal
+      attractor_topic: /initialpose
       threshold: 0.2 # to be applied to the input layer
       use_field_smoothing: false
       field_smoothing_radius: 0.05 # m
 
-  - name: risk_booster
-    type: gridMapFilters/MathExpressionFilter
-    params:
-      output_layer: risk_boosted
-      expression: risk_learned^2
+  # - name: risk_booster
+  #   type: gridMapFilters/MathExpressionFilter
+  #   params:
+  #     output_layer: risk_boosted
+  #     expression: risk_learned^2
   
   - name: geodesic_field
     type: gridMapFiltersDrs/GeodesicFieldFilter
     params:
-      input_layer: risk_boosted
+      input_layer: traversability_geometric
       output_layer: geodesic_field
       normalize_gradients: true
-      attractor_topic: /goal
+      attractor_topic: /initialpose

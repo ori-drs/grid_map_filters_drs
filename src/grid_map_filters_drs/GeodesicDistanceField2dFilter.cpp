@@ -102,30 +102,30 @@ bool GeodesicDistanceField2dFilter<T>::configure()
 }
 
 template<typename T>
-void GeodesicDistanceField2dFilter<T>::attractorCallback(const geometry_msgs::PoseStampedConstPtr& msg) {
+void GeodesicDistanceField2dFilter<T>::attractorCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg) {
 
   if(mapFrame_ == "not_set"){
     return;
   }
 
   // Convert attractor goal to grid map frame
-  std::string goalFrame = msg->header.frame_id;
+  std::string goalFixedFrame = msg->header.frame_id;
 
-  Eigen::Isometry3d goalPose = Eigen::Isometry3d::Identity();
-  tf::poseMsgToEigen(msg->pose, goalPose);
+  Eigen::Isometry3d eigen_T_fixed_goal = Eigen::Isometry3d::Identity();
+  tf::poseMsgToEigen(msg->pose.pose, eigen_T_fixed_goal);
 
-  if (goalFrame != mapFrame_){
-    tf::StampedTransform goalToMapTransform;
+  if (goalFixedFrame != mapFrame_){
+    tf::StampedTransform tf_T_map_goal;
     
     try {
-      tfListener_->lookupTransform(mapFrame_, goalFrame, ros::Time(0), goalToMapTransform);
+      tfListener_->lookupTransform(mapFrame_, goalFixedFrame, ros::Time(0), tf_T_map_goal);
 
       // Convert to Isometry3d
-      Eigen::Isometry3d goalToMap = Eigen::Isometry3d::Identity();
-      tf::transformTFToEigen (goalToMapTransform, goalToMap);
+      Eigen::Isometry3d eigen_T_map_fixed = Eigen::Isometry3d::Identity();
+      tf::transformTFToEigen (tf_T_map_goal, eigen_T_map_fixed);
 
       // Update goal
-      goalPose = goalToMap * goalPose;
+      eigen_T_fixed_goal = eigen_T_map_fixed * eigen_T_fixed_goal;
     }
     catch (tf::TransformException& ex){
       ROS_ERROR("%s",ex.what());
@@ -139,8 +139,8 @@ void GeodesicDistanceField2dFilter<T>::attractorCallback(const geometry_msgs::Po
   }
 
   // Fill attractor coordinates
-  attractorPosition_.x() = goalPose.translation().x();
-  attractorPosition_.y() = goalPose.translation().y();
+  attractorPosition_.x() = eigen_T_fixed_goal.translation().x();
+  attractorPosition_.y() = eigen_T_fixed_goal.translation().y();
   attractorStamp_ = msg->header.stamp;
 
   ROS_DEBUG_STREAM("[GeodesicDistanceField2dFilter] Attractor: [" 

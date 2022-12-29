@@ -61,4 +61,7 @@ bool DeleteAllButFilter<T>::exists(const std::string& layer,
 
 }  // namespace grid_map
 
+// Explicitly define the specialization for GridMap
+template class grid_map::DeleteAllButFilter<grid_map::GridMap>;
+// Export the filter.
 PLUGINLIB_EXPORT_CLASS(grid_map::DeleteAllButFilter<grid_map::GridMap>, filters::FilterBase<grid_map::GridMap>)

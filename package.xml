@@ -30,8 +30,6 @@
   <depend>tf</depend>
   <depend>tf_conversions</depend>
 
-  <depend>gpu_path_optimizer</depend>
-
   <!-- <depend>message_runtime</depend> -->
 
   <export>

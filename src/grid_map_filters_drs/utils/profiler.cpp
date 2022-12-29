@@ -29,11 +29,12 @@ Profiler::Event::~Event()
     std::string systemTime = boost::posix_time::to_iso_string(now);
 
     // Get home directory
-    std::string homeDir = std::string(getenv("HOME"));
+    // std::string baseDir = std::string(getenv("HOME"));
+    std::string baseDir = std::string("/tmp");
 
     // Logging file
     std::ofstream log;
-    log.open(homeDir + "/profiling" + "_" + name_ + ".txt");
+    log.open(baseDir + "/profiling" + "_" + name_ + ".txt");
     
     // Write header
     log << "# Profiling for event [" << name_ << "]\n" 

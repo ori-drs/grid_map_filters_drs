@@ -220,4 +220,7 @@ void FastNormalsVectorFilter<T>::addMatAsLayer(const cv::Mat& mat, const std::st
 
 } /* namespace */
 
+// Explicitly define the specialization for GridMap
+template class grid_map::FastNormalsVectorFilter<grid_map::GridMap>;
+// Export the filter.
 PLUGINLIB_EXPORT_CLASS(grid_map::FastNormalsVectorFilter<grid_map::GridMap>, filters::FilterBase<grid_map::GridMap>)

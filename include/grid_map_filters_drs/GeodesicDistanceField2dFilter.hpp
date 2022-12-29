@@ -16,6 +16,7 @@
 #include <tf_conversions/tf_eigen.h>
 #include <tf/transform_listener.h>
 #include <eigen_conversions/eigen_msg.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <std_srvs/Trigger.h>
 
 #include <grid_map_filters_drs/thirdparty/GeodesicDistanceTransform.hpp>
@@ -73,7 +74,7 @@ class GeodesicDistanceField2dFilter : public filters::FilterBase<T>
   /*!
    * Subscribers the attractor from a pose message
    */
-  void attractorCallback(const geometry_msgs::PoseStampedConstPtr& msg);
+  void attractorCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg);
 
   //! Layer the threshold will be evaluated.
   std::string inputLayer_;

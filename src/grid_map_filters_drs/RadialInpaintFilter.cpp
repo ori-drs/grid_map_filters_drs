@@ -197,5 +197,8 @@ bool RadialInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
 
 }/* namespace */
 
+// Explicitly define the specialization for GridMap to have the filter implementation available for testing.
+template class grid_map::RadialInpaintFilter<grid_map::GridMap>;
+// Export the filter.
 PLUGINLIB_EXPORT_CLASS(grid_map::RadialInpaintFilter<grid_map::GridMap>, filters::FilterBase<grid_map::GridMap>)
 

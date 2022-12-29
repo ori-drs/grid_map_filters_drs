@@ -20,7 +20,7 @@
         Fills NaN values using a fixed value or min/max
       </description>
     </class>
-     <class name="gridMapFiltersDrs/NanMaskFilter" type="grid_map::NanMaskFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+    <class name="gridMapFiltersDrs/NanMaskFilter" type="grid_map::NanMaskFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
       <description>
         Generates a layer (mask) from all the nan values
       </description>
@@ -53,6 +53,8 @@
     <class name="gridMapFiltersDrs/DeleteAllButFilter" type="grid_map::DeleteAllButFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
       <description>
         Deletes all the layers but the selected ones
+      </description>
+    </class>
     <class name="gridMapFiltersDrs/RadialInpaintFilter" type="grid_map::RadialInpaintFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
       <description>
         An improved version of the grid_map_cv inpaint filter which denoises (fastNlMeansDenoising) the map and then inpaints it *radially*.
