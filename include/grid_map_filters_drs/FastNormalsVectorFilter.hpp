@@ -7,6 +7,7 @@
 #pragma once
 
 #include <filters/filter_base.hpp>
+#include <grid_map_filters_drs/utils/profiler.hpp>
 #include <string>
 #include <vector>
 
@@ -74,6 +75,9 @@ class FastNormalsVectorFilter : public filters::FilterBase<T>
   std::string xOutputLayer_;
   std::string yOutputLayer_;
   std::string zOutputLayer_;
+
+  //! Profiler
+  std::shared_ptr<Profiler> profiler_ptr_;
 };
 
 } /* namespace */

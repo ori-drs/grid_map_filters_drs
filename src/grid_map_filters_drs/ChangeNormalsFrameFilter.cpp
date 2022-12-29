@@ -31,6 +31,9 @@ ChangeNormalsFrameFilter<T>::~ChangeNormalsFrameFilter()
 template<typename T>
 bool ChangeNormalsFrameFilter<T>::configure()
 {
+  // Setup profiler
+  profiler_ptr_ = std::make_shared<Profiler>("ChangeNormalsFrameFilter");
+
   // Load Parameters
   // Input layer to be processed
   if (!FilterBase<T>::getParam(std::string("input_layers_prefix"), inputNormalLayersPrefix_)) {
@@ -62,7 +65,7 @@ bool ChangeNormalsFrameFilter<T>::configure()
 template<typename T>
 bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
 {
-  auto tic = std::chrono::high_resolution_clock::now();
+  profiler_ptr_->startEvent("0.update");
 
   mapOut = mapIn;
 
@@ -121,9 +124,8 @@ bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
   }
   
   // Timing
-  auto toc = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
-  ROS_DEBUG_STREAM("[ChangeNormalsFrameFilter] Process time: " << elapsedTime.count() << " ms");
+  profiler_ptr_->endEvent("0.update");
+  ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
 
   return true;
 }

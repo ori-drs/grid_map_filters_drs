@@ -10,6 +10,7 @@
 #pragma once
 
 #include <grid_map_ros/grid_map_ros.hpp>
+#include <grid_map_filters_drs/utils/profiler.hpp>
 #include <filters/filter_chain.hpp>
 #include <std_srvs/Trigger.h>
 #include <ros/ros.h>
@@ -99,4 +100,7 @@ private:
 
     //! Debug timing
     std::chrono::high_resolution_clock::time_point latencyTic_;
+
+    //! Profiler
+    std::shared_ptr<Profiler> profiler_ptr_;
 };

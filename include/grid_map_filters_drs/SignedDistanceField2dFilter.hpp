@@ -8,6 +8,7 @@
 #pragma once
 
 #include <filters/filter_base.hpp>
+#include <grid_map_filters_drs/utils/profiler.hpp>
 #include <string>
 #include <vector>
 
@@ -67,6 +68,9 @@ class SignedDistanceField2dFilter : public filters::FilterBase<T>
 
   //! Flag to normalize output gradients
   bool normalizeGradients_;
+
+  //! Profiler
+  std::shared_ptr<Profiler> profiler_ptr_;
 };
 
 } /* namespace */

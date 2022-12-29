@@ -28,6 +28,9 @@ GeodesicDistanceField2dFilter<T>::~GeodesicDistanceField2dFilter()
 template<typename T>
 bool GeodesicDistanceField2dFilter<T>::configure()
 {
+  // Setup profiler
+  profiler_ptr_ = std::make_shared<Profiler>("GeodesicDistanceField2dFilter");
+
   // Initialize node handle
   nodeHandle_ = ros::NodeHandle("~geodesic_distance_filter");
 
@@ -146,7 +149,7 @@ void GeodesicDistanceField2dFilter<T>::attractorCallback(const geometry_msgs::Po
 
 template<typename T>
 bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
-  auto tic = std::chrono::high_resolution_clock::now();
+  profiler_ptr_->startEvent("0.update");
 
   // Copy and fix indexing
   mapOut = mapIn;
@@ -171,6 +174,7 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   mapFrame_ = mapOut.getFrameId();
 
   // Convert selected layer to OpenCV image
+  profiler_ptr_->startEvent("1.preprocess");
   cv::Mat cvLayer;
   const float minValue = mapOut.get(inputLayer_).minCoeffOfFinites();
   const float maxValue = mapOut.get(inputLayer_).maxCoeffOfFinites();
@@ -216,7 +220,9 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
     cv::GaussianBlur(cvObstacleSpaceMask, cvObstacleSpaceMask, cv::Size(radiusInPixels, radiusInPixels), 0);
   }
+  profiler_ptr_->endEvent("1.preprocess");
 
+  profiler_ptr_->startEvent("2.gdf_computation");
   // Prepare seeds
   std::vector<cv::Point> seeds;
   grid_map::Index index = getAttractorIndex(mapOut, attractorPosition_);
@@ -226,7 +232,9 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
   // Compute Geodesic Distance
   GeodesicDistance<float>(cvObstacleSpaceMask, seeds, cvGeodesicDistance);
+  profiler_ptr_->endEvent("2.gdf_computation");
 
+  profiler_ptr_->startEvent("3.gdf_gradients");
   // Blur before computing gradients to smooth the image
   cv::GaussianBlur(cvGeodesicDistance, cvGeodesicDistance, cv::Size(5, 5), 0);
 
@@ -247,19 +255,21 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
     cvGradientsX /= (normNormal + std::numeric_limits<float>::epsilon());
     cvGradientsY /= (normNormal + std::numeric_limits<float>::epsilon());
   }
+  profiler_ptr_->endEvent("3.gdf_gradients");
 
   // Add layers
+  profiler_ptr_->startEvent("4.gdf_add_layers");
   addMatAsLayer(cvGeodesicDistance, outputLayer_, mapOut, resolution);
   addMatAsLayer(cvGradientsX, gradientXLayer_, mapOut);
   addMatAsLayer(cvGradientsY, gradientYLayer_, mapOut);
   addMatAsLayer(cvGradientsZ, gradientZLayer_, mapOut);
+  profiler_ptr_->endEvent("4.gdf_add_layers");
   
   mapOut.setBasicLayers({});
 
   // Timing
-  auto toc = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
-  ROS_DEBUG_STREAM("[GeodesicDistanceField2dFilter] Process time: " << elapsedTime.count() << " ms");
+  profiler_ptr_->endEvent("0.update");
+  ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
   
   return true;
 }
@@ -280,6 +290,11 @@ grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gri
   index.y() = std::min(index.y(), gridMap.getSize().y()-1);
   index.x() = std::max(index.x(), 0);
   index.y() = std::max(index.y(), 0);
+  // std::cout << "Grid map length        : " << gridMap.getLength().transpose() << std::endl;
+  // std::cout << "Grid map size          : " << gridMap.getSize().transpose() << std::endl;
+  // std::cout << "Grid map resolution    : " << gridMap.getResolution() << std::endl;
+  // std::cout << "Closest Attractor      : " << closestAttractor.transpose() << std::endl;
+  // std::cout << "Closest Attractor index: " << index.transpose() << std::endl;
 
   // ROS_WARN_STREAM("attractor closest index: " << index(0) << ", " << index(1));
   bool traversable = gridMap.at(freeSpaceLayer_, index) > 0;

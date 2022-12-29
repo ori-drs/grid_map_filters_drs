@@ -39,6 +39,10 @@ ElevationMapFilter::ElevationMapFilter(ros::NodeHandle &nodeHandle, bool &succes
     return;
   }
 
+  // Setup profiler
+  profiler_ptr_ = std::make_shared<Profiler>("ElevationMapFilter");
+
+
   success = true;
 }
 
@@ -62,16 +66,23 @@ void ElevationMapFilter::applyFilterChain(grid_map::GridMap& inputMap)
 {
   grid_map::GridMap outputMap;
 
-  auto tic = std::chrono::high_resolution_clock::now();
+  // auto tic = std::chrono::high_resolution_clock::now();
+  profiler_ptr_->startEvent("0.update");
   if (!filterChain_.update(inputMap, outputMap))
   {
     ROS_ERROR("[Filter chain] Could not update the grid map filter chain!");
     return;
   }
 
-  auto toc = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
-  ROS_DEBUG_STREAM("[Filter chain] Time required to apply filter chain: " << elapsedTime.count() << " ms");
+  // sleep(2);
+
+  // Timing
+  profiler_ptr_->endEvent("0.update");
+  ROS_DEBUG_STREAM(profiler_ptr_->getReport());
+  
+  // auto toc = std::chrono::high_resolution_clock::now();
+  // std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
+  // ROS_DEBUG_STREAM("[Filter chain] Time required to apply filter chain: " << elapsedTime.count() << " ms");
 
   // Publish filtered output grid map.
   grid_map_msgs::GridMap outputMessage;
