@@ -45,5 +45,10 @@
         Applies a threshold on a layer when transformed to a given frame
       </description>
     </class>
+    <class name="gridMapFiltersDrs/RadialInpaintFilter" type="grid_map::RadialInpaintFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        An improved version of the grid_map_cv inpaint filter which denoises (fastNlMeansDenoising) the map and then inpaints it *radially*.
+      </description>
+    </class>
   </library>
 </class_libraries>

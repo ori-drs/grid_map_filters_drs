@@ -125,9 +125,9 @@ bool DenoiseAndInpaintFilter<T>::configure()
   // Bilateral averaging radius
   bilateralWindowSize_ = 20;
   if (!FilterBase < T > ::getParam(std::string("bilateral_window_size"), bilateralWindowSize_)) {
-    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `bilateral_window_size`. Using default %f", bilateralWindowSize_);
+    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `bilateral_window_size`. Using default %i", static_cast<int>(bilateralWindowSize_));
   }
-  ROS_DEBUG("[DenoiseAndInpaintFilter] bilateral_window_size = %f.", bilateralWindowSize_);
+  ROS_DEBUG("[DenoiseAndInpaintFilter] bilateral_window_size = %i.", static_cast<int>(bilateralWindowSize_));
 
   return true;
 }
