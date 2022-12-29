@@ -50,16 +50,17 @@
         Applies a threshold on a layer when transformed to a given frame
       </description>
     </class>
-
-    <class name="gridMapFiltersDrs/LearnedMotionCostsFilter" type="grid_map::LearnedMotionCostsFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
-      <description>
-        Request a cost computed from the learned motion cost server (gpu_path_optimizer)
-      </description>
-    </class>
-
     <class name="gridMapFiltersDrs/DeleteAllButFilter" type="grid_map::DeleteAllButFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
       <description>
         Deletes all the layers but the selected ones
+    <class name="gridMapFiltersDrs/RadialInpaintFilter" type="grid_map::RadialInpaintFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        An improved version of the grid_map_cv inpaint filter which denoises (fastNlMeansDenoising) the map and then inpaints it *radially*.
+      </description>
+    </class>
+    <class name="gridMapFiltersDrs/LearnedMotionCostsFilter" type="grid_map::LearnedMotionCostsFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Request a cost computed from the learned motion cost server (gpu_path_optimizer)
       </description>
     </class>
   </library>

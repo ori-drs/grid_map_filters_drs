@@ -38,6 +38,16 @@ grid_map_filters:
       output_layer: traversability_learned
       expression:  1.0 - ((risk_learned - min(risk_learned)) / (max(risk_learned) - min(risk_learned)))
 
+  # Inpainting (radial)
+  - name: inpaint_radially
+    type: gridMapFiltersDrs/RadialInpaintFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_inpainted_radially
+      radius: 0.15 # in m
+      pre_denoising: true # enables denoising before inpainting
+      denoising_radius: 0.15 # m
+
   # # GP Inpainting
   # - name: gp_inpainting
   #   type: gridMapFiltersDrs/GaussianProcessInpaintFilter
