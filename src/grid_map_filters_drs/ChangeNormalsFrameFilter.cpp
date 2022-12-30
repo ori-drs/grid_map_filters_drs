@@ -2,35 +2,29 @@
  * ChangeNormalsFrameFilter.cpp
  *
  *  Rotates the normals to match a frame
- * 
+ *
  *  Author: Matias Mattamala
  */
 
-
-#include <grid_map_filters_drs/ChangeNormalsFrameFilter.hpp>
-#include <grid_map_core/grid_map_core.hpp>
 #include <pluginlib/class_list_macros.h>
-#include <string>
-#include <stdexcept>
 #include <Eigen/Dense>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_filters_drs/ChangeNormalsFrameFilter.hpp>
+#include <stdexcept>
+#include <string>
 
 using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-ChangeNormalsFrameFilter<T>::ChangeNormalsFrameFilter()
-{
-}
+template <typename T>
+ChangeNormalsFrameFilter<T>::ChangeNormalsFrameFilter() {}
 
-template<typename T>
-ChangeNormalsFrameFilter<T>::~ChangeNormalsFrameFilter()
-{
-}
+template <typename T>
+ChangeNormalsFrameFilter<T>::~ChangeNormalsFrameFilter() {}
 
-template<typename T>
-bool ChangeNormalsFrameFilter<T>::configure()
-{
+template <typename T>
+bool ChangeNormalsFrameFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("ChangeNormalsFrameFilter");
 
@@ -52,9 +46,9 @@ bool ChangeNormalsFrameFilter<T>::configure()
   tfListener_ = std::make_shared<tf::TransformListener>();
 
   // Preallocate normal layer names
-  xInputLayer_  = inputNormalLayersPrefix_ + "x";
-  yInputLayer_  = inputNormalLayersPrefix_ + "y";
-  zInputLayer_  = inputNormalLayersPrefix_ + "z";
+  xInputLayer_ = inputNormalLayersPrefix_ + "x";
+  yInputLayer_ = inputNormalLayersPrefix_ + "y";
+  zInputLayer_ = inputNormalLayersPrefix_ + "z";
   xOutputLayer_ = inputNormalLayersPrefix_ + "in_" + targetFrame_ + "_x";
   yOutputLayer_ = inputNormalLayersPrefix_ + "in_" + targetFrame_ + "_y";
   zOutputLayer_ = inputNormalLayersPrefix_ + "in_" + targetFrame_ + "_z";
@@ -62,9 +56,8 @@ bool ChangeNormalsFrameFilter<T>::configure()
   return true;
 }
 
-template<typename T>
-bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
-{
+template <typename T>
+bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("0.update");
 
   mapOut = mapIn;
@@ -93,26 +86,25 @@ bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
 
   // Get transformation
   Eigen::Isometry3d mapToTarget = Eigen::Isometry3d::Identity();
-  
+
   // Recover transformation
   try {
     tf::StampedTransform mapToTargetTransform;
     tfListener_->lookupTransform(targetFrame_, mapFrame_, ros::Time(0), mapToTargetTransform);
-    tf::transformTFToEigen (mapToTargetTransform, mapToTarget);
-  }
-  catch (tf::TransformException& ex){
-    ROS_ERROR("%s",ex.what());
+    tf::transformTFToEigen(mapToTargetTransform, mapToTarget);
+  } catch (tf::TransformException& ex) {
+    ROS_ERROR("%s", ex.what());
   }
 
   // Apply rotation
   for (grid_map::GridMapIterator iterator(mapOut); !iterator.isPastEnd(); ++iterator) {
-    if (mapOut.isValid(*iterator, xInputLayer_) && mapOut.isValid(*iterator, yInputLayer_) && mapOut.isValid(*iterator, zInputLayer_)){
+    if (mapOut.isValid(*iterator, xInputLayer_) && mapOut.isValid(*iterator, yInputLayer_) && mapOut.isValid(*iterator, zInputLayer_)) {
       // Extract 3 components of normal
       Eigen::Vector3d normal;
       normal.x() = mapOut.at(xInputLayer_, *iterator);
       normal.y() = mapOut.at(yInputLayer_, *iterator);
       normal.z() = mapOut.at(zInputLayer_, *iterator);
-      
+
       // Rotate normal
       normal = mapToTarget.rotation() * normal;
 
@@ -122,7 +114,7 @@ bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
       mapOut.at(zOutputLayer_, *iterator) = normal.z();
     }
   }
-  
+
   // Timing
   profiler_ptr_->endEvent("0.update");
   ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
@@ -130,6 +122,9 @@ bool ChangeNormalsFrameFilter<T>::update(const T& mapIn, T& mapOut)
   return true;
 }
 
-} /* namespace */
+}  // namespace grid_map
 
+// Explicitly define the specialization for GridMap
+template class grid_map::ChangeNormalsFrameFilter<grid_map::GridMap>;
+// Export the filter.
 PLUGINLIB_EXPORT_CLASS(grid_map::ChangeNormalsFrameFilter<grid_map::GridMap>, filters::FilterBase<grid_map::GridMap>)

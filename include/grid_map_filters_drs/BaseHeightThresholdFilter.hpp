@@ -4,7 +4,6 @@
  *  Author: Matias Mattamala
  */
 
-
 #pragma once
 
 #include <filters/filter_base.hpp>
@@ -12,18 +11,16 @@
 #include <string>
 #include <vector>
 
-#include <tf_conversions/tf_eigen.h>
 #include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 
 namespace grid_map {
 
 /*!
  * Applies a threshold to cells with specific height when transformed to a given frame
  */
-template<typename T>
-class BaseHeightThresholdFilter : public filters::FilterBase<T>
-{
-
+template <typename T>
+class BaseHeightThresholdFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
@@ -49,7 +46,6 @@ class BaseHeightThresholdFilter : public filters::FilterBase<T>
   virtual bool update(const T& mapIn, T& mapOut);
 
  private:
-
   //! Target frame
   std::string targetFrame_;
   //! Map frame
@@ -66,9 +62,9 @@ class BaseHeightThresholdFilter : public filters::FilterBase<T>
   // Layer names
   std::string inputLayer_;
   std::string outputLayer_;
-  
+
   //! Profiler
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

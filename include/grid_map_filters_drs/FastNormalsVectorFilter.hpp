@@ -11,9 +11,9 @@
 #include <string>
 #include <vector>
 
+#include <pluginlib/class_list_macros.h>
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_cv/grid_map_cv.hpp>
-#include <pluginlib/class_list_macros.h>
 
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -23,10 +23,8 @@ namespace grid_map {
 /*!
  * Rotates normal vectors to be consistent with base frame
  */
-template<typename T>
-class FastNormalsVectorFilter : public filters::FilterBase<T>
-{
-
+template <typename T>
+class FastNormalsVectorFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
@@ -55,7 +53,7 @@ class FastNormalsVectorFilter : public filters::FilterBase<T>
   /*!
    * Helper to fill layers with cv::Mats
    */
-  void addMatAsLayer(const cv::Mat& m, const std::string& layerName, grid_map::GridMap& gridMap, double resolution=1.0);
+  void addMatAsLayer(const cv::Mat& m, const std::string& layerName, grid_map::GridMap& gridMap, double resolution = 1.0);
 
   //! Input layer prefix for normals
   std::string inputLayer_;
@@ -69,7 +67,7 @@ class FastNormalsVectorFilter : public filters::FilterBase<T>
   double preSmoothingRadius_;
   double postSmoothingRadius_;
   std::string preSmoothingType_;
-  std::string postSmoothingType_;  
+  std::string postSmoothingType_;
 
   // Layer names
   std::string xOutputLayer_;
@@ -80,4 +78,4 @@ class FastNormalsVectorFilter : public filters::FilterBase<T>
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

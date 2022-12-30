@@ -1,5 +1,5 @@
 /*
- * SignedDistanceField2dFilter.hpp
+ * LearnedMotionCostsFilter.hpp
  *
  *  Author: Matias Mattamala
  */
@@ -11,11 +11,21 @@
 #include <string>
 #include <vector>
 
+#include <eigen_conversions/eigen_msg.h>
+#include <ros/ros.h>
+#include <std_srvs/Trigger.h>
+#include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
+
 #include <pluginlib/class_list_macros.h>
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_cv/grid_map_cv.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
+#include <gpu_path_optimizer/ComputeTraversability.h>
 
 namespace grid_map {
 
@@ -23,17 +33,17 @@ namespace grid_map {
  * Computes a signed distance field by applying a threshold on a layer
  */
 template <typename T>
-class SignedDistanceField2dFilter : public filters::FilterBase<T> {
+class LearnedMotionCostsFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
    */
-  SignedDistanceField2dFilter();
+  LearnedMotionCostsFilter();
 
   /*!
    * Destructor.
    */
-  virtual ~SignedDistanceField2dFilter();
+  virtual ~LearnedMotionCostsFilter();
 
   /*!
    * Configures the filter from parameters on the parameter server.
@@ -49,22 +59,27 @@ class SignedDistanceField2dFilter : public filters::FilterBase<T> {
   virtual bool update(const T& mapIn, T& mapOut);
 
  private:
-  /*!
-   * Helper to fill layers with cv::Mats
-   */
-  void addMatAsLayer(const cv::Mat& m, const std::string& layerName, grid_map::GridMap& gridMap, double resolution = 1.0);
-
   //! Layer the threshold will be evaluated.
   std::string inputLayer_;
 
-  //! Output layer prefix
+  //! Output layer
   std::string outputLayer_;
 
-  //! Traversability threshold
-  double threshold_;
+  //! Selected cost layer
+  std::string costLayer_;
 
-  //! Flag to normalize output gradients
-  bool normalizeGradients_;
+  // ! Output layers
+  std::string serviceName_;
+
+  //! ROS helpers
+  //! TF listener
+  std::shared_ptr<tf::TransformListener> tfListener_;
+
+  //! Node handle
+  ros::NodeHandle nodeHandle_;
+
+  //! Attractor subscriber
+  ros::ServiceClient serviceClient_;
 
   //! Profiler
   std::shared_ptr<Profiler> profiler_ptr_;

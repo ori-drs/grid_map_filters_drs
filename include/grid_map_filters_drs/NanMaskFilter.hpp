@@ -1,5 +1,5 @@
 /*
- * NanFillerFilter.hpp
+ * NanMaskFilter.hpp
  *
  *  Author: Matias Mattamala
  */
@@ -17,17 +17,17 @@ namespace grid_map {
  * Sets nan values to fixed value
  */
 template <typename T>
-class NanFillerFilter : public filters::FilterBase<T> {
+class NanMaskFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
    */
-  NanFillerFilter();
+  NanMaskFilter();
 
   /*!
    * Destructor.
    */
-  virtual ~NanFillerFilter();
+  virtual ~NanMaskFilter();
 
   /*!
    * Configures the filter from parameters on the parameter server.
