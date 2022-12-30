@@ -1,7 +1,7 @@
 /*
  * NanMaskFilter.cpp
  *
- *  Replaces NaNs by a fixed value
+ *  Generates a new layer with a mask that indicates the NaN values
  * 
  *  Author: Matias Mattamala
  */

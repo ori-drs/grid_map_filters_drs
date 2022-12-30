@@ -1,7 +1,7 @@
 /*
  * LearnedMotionCostsFilter.cpp
  *
- *  Implements a Geodesic Distance layer using a binary layer. 0 means obstacles, 1 free space
+ *  Request motion costs (risk, energy, time) from the gpu_path_optimizer package using service calls
  * 
  *  Author: Matias Mattamala
  */

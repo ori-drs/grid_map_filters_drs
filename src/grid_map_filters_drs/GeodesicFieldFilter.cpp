@@ -1,7 +1,8 @@
 /*
  * GeodesicFieldFilter.cpp
  *
- *  Computes a geodesic field given a goal
+ *  Computes a geodesic field from a layer, given an attractor
+ *  Note: Requires more testing, features can otentially be merged into GeodesicDistanceField2dFilter
  * 
  *  Author: Matias Mattamala
  */

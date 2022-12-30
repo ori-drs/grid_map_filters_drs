@@ -5,7 +5,9 @@
  *  by Tanja Baumann, Peter Fankhauser (ETH Zurich, ANYbotics)
  *  
  *  Author: Oliwier Melon
- *  Author: Wolfwang Merkt
+ *  Author: Wolfgang Merkt
+ * 
+ *  Note: Requires testing
  */
 
 #include "grid_map_filters_drs/RadialInpaintFilter.hpp"

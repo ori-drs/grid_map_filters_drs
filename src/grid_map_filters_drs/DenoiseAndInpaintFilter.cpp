@@ -4,6 +4,8 @@
  *  Based on original InpaintFilter 
  *  by Tanja Baumann, Peter Fankhauser (ETH Zurich, ANYbotics)
  * 
+ *  It applies different denoising and inpainting algorithms
+ * 
  *  Author: Matias Mattamala
  */
 
