@@ -2,31 +2,25 @@
  * SignedDistanceField2dFilter.cpp
  *
  *  Implements a 2D SDF layer using a binary layer. 0 means obstacles, 1 free space
- * 
+ *
  *  Author: Matias Mattamala
  */
 
-
-#include <grid_map_filters_drs/SignedDistanceField2dFilter.hpp>
 #include <time.h>
+#include <grid_map_filters_drs/SignedDistanceField2dFilter.hpp>
 
 using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-SignedDistanceField2dFilter<T>::SignedDistanceField2dFilter()
-{
-}
+template <typename T>
+SignedDistanceField2dFilter<T>::SignedDistanceField2dFilter() {}
 
-template<typename T>
-SignedDistanceField2dFilter<T>::~SignedDistanceField2dFilter()
-{
-}
+template <typename T>
+SignedDistanceField2dFilter<T>::~SignedDistanceField2dFilter() {}
 
-template<typename T>
-bool SignedDistanceField2dFilter<T>::configure()
-{
+template <typename T>
+bool SignedDistanceField2dFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("SignedDistanceField2dFilter");
 
@@ -57,12 +51,12 @@ bool SignedDistanceField2dFilter<T>::configure()
     ROS_ERROR("SDF 2D filter did not find parameter `normalize_gradients`.");
     return false;
   }
-  ROS_DEBUG("SDF 2D filter normalize_gradients = %s.", (normalizeGradients_? "true" : "false"));
+  ROS_DEBUG("SDF 2D filter normalize_gradients = %s.", (normalizeGradients_ ? "true" : "false"));
 
   return true;
 }
 
-template<typename T>
+template <typename T>
 bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   // auto tic = std::chrono::high_resolution_clock::now();
   profiler_ptr_->startEvent("0.update");
@@ -86,15 +80,14 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::Mat cvLayer;
   const float minValue = mapOut.get(inputLayer_).minCoeffOfFinites();
   const float maxValue = mapOut.get(inputLayer_).maxCoeffOfFinites();
-  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, 
-                                                  minValue, maxValue, cvLayer);  
+  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, minValue, maxValue, cvLayer);
   cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
   cvLayer.convertTo(cvLayer, CV_32F);
-  cvLayer*=255;
+  cvLayer *= 255;
 
   // Apply threshold and compute obstacle masks
   cv::Mat cvObstacleSpaceMask, cvFreeSpaceMask;
-  cv::threshold(cvLayer, cvObstacleSpaceMask, 255*threshold_, 255, cv::THRESH_BINARY);
+  cv::threshold(cvLayer, cvObstacleSpaceMask, 255 * threshold_, 255, cv::THRESH_BINARY);
   cvObstacleSpaceMask.convertTo(cvObstacleSpaceMask, CV_8UC1);
   cv::bitwise_not(cvObstacleSpaceMask, cvFreeSpaceMask);
   profiler_ptr_->endEvent("1.preprocess");
@@ -103,14 +96,14 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("2.sdf_computation");
   cv::Mat cvSdfFreeSpace;
   cv::Mat cvSdfObstacleSpace;
-  cv::distanceTransform(cvFreeSpaceMask, cvSdfFreeSpace, cv::DIST_L2, 3);         // TODO: parametrize kernel and distance metric
-  cv::distanceTransform(cvObstacleSpaceMask, cvSdfObstacleSpace, cv::DIST_L2, 3); // TODO: parametrize kernel and distance metric
+  cv::distanceTransform(cvFreeSpaceMask, cvSdfFreeSpace, cv::DIST_L2, 3);          // TODO: parametrize kernel and distance metric
+  cv::distanceTransform(cvObstacleSpaceMask, cvSdfObstacleSpace, cv::DIST_L2, 3);  // TODO: parametrize kernel and distance metric
   cv::Mat cvSdf = cvSdfObstacleSpace - cvSdfFreeSpace;
   profiler_ptr_->endEvent("2.sdf_computation");
-  
+
   profiler_ptr_->startEvent("3.sdf_gradients");
   cv::Mat cvSdfGrad = cvSdf.clone();
-  // Smooth SDF 
+  // Smooth SDF
   cv::GaussianBlur(cvSdf, cvSdfGrad, cv::Size(5, 5), 0);
 
   // Compute gradients
@@ -122,7 +115,7 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   // cvGradientsX*=resolution;
   // cvGradientsY*=resolution;
 
-  if(normalizeGradients_) {
+  if (normalizeGradients_) {
     // Compute norm
     cv::Mat sqGradientsX;
     cv::Mat sqGradientsY;
@@ -136,8 +129,8 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   }
 
   // Some normalization to ease visualization
-  cvObstacleSpaceMask/=255.0;
-  cvFreeSpaceMask/=255.0;
+  cvObstacleSpaceMask /= 255.0;
+  cvFreeSpaceMask /= 255.0;
   profiler_ptr_->endEvent("3.sdf_gradients");
 
   // Add layers
@@ -165,27 +158,26 @@ bool SignedDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   return true;
 }
 
-template<typename T>
-void SignedDistanceField2dFilter<T>::addMatAsLayer(const cv::Mat& mat, const std::string& layerName, grid_map::GridMap& gridMap, double resolution)
-{
+template <typename T>
+void SignedDistanceField2dFilter<T>::addMatAsLayer(const cv::Mat& mat, const std::string& layerName, grid_map::GridMap& gridMap,
+                                                   double resolution) {
   // Get max and min
   double minDistance, maxDistance;
   cv::minMaxLoc(mat, &minDistance, &maxDistance);
 
-  minDistance*= resolution;
-  maxDistance*= resolution;
- 
+  minDistance *= resolution;
+  maxDistance *= resolution;
+
   // Normalize sdf to get a greyscale image
   cv::Mat normalized;
   cv::normalize(mat, normalized, 0, 1.0, cv::NORM_MINMAX);
   normalized.convertTo(normalized, CV_32F);
 
   // Add layer to elevation map
-  grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(normalized, layerName,
-                                                  gridMap, minDistance, maxDistance);
+  grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(normalized, layerName, gridMap, minDistance, maxDistance);
 }
 
-} /* namespace */
+}  // namespace grid_map
 
 // Explicitly define the specialization for GridMap to have the filter implementation available for testing.
 template class grid_map::SignedDistanceField2dFilter<grid_map::GridMap>;

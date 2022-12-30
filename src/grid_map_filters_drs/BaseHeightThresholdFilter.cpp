@@ -2,35 +2,29 @@
  * BaseHeightThresholdFilter.cpp
  *
  *  Rotates the normals to match a frame
- * 
+ *
  *  Author: Matias Mattamala
  */
 
-
-#include <grid_map_filters_drs/BaseHeightThresholdFilter.hpp>
-#include <grid_map_core/grid_map_core.hpp>
 #include <pluginlib/class_list_macros.h>
-#include <string>
-#include <stdexcept>
 #include <Eigen/Dense>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_filters_drs/BaseHeightThresholdFilter.hpp>
+#include <stdexcept>
+#include <string>
 
 using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-BaseHeightThresholdFilter<T>::BaseHeightThresholdFilter()
-{
-}
+template <typename T>
+BaseHeightThresholdFilter<T>::BaseHeightThresholdFilter() {}
 
-template<typename T>
-BaseHeightThresholdFilter<T>::~BaseHeightThresholdFilter()
-{
-}
+template <typename T>
+BaseHeightThresholdFilter<T>::~BaseHeightThresholdFilter() {}
 
-template<typename T>
-bool BaseHeightThresholdFilter<T>::configure()
-{
+template <typename T>
+bool BaseHeightThresholdFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("BaseHeightThresholdFilter");
 
@@ -83,9 +77,8 @@ bool BaseHeightThresholdFilter<T>::configure()
   return true;
 }
 
-template<typename T>
-bool BaseHeightThresholdFilter<T>::update(const T& mapIn, T& mapOut)
-{
+template <typename T>
+bool BaseHeightThresholdFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("0.update");
 
   mapOut = mapIn;
@@ -104,20 +97,19 @@ bool BaseHeightThresholdFilter<T>::update(const T& mapIn, T& mapOut)
 
   // Get transformation
   Eigen::Isometry3d mapToTarget = Eigen::Isometry3d::Identity();
-  
+
   // Recover transformation
   try {
     tf::StampedTransform mapToTargetTransform;
     tfListener_->lookupTransform(targetFrame_, mapFrame_, ros::Time(0), mapToTargetTransform);
-    tf::transformTFToEigen (mapToTargetTransform, mapToTarget);
-  }
-  catch (tf::TransformException& ex){
-    ROS_ERROR("%s",ex.what());
+    tf::transformTFToEigen(mapToTargetTransform, mapToTarget);
+  } catch (tf::TransformException& ex) {
+    ROS_ERROR("%s", ex.what());
   }
 
   // Apply transformation and compare height
   for (grid_map::GridMapIterator iterator(mapOut); !iterator.isPastEnd(); ++iterator) {
-    if (mapOut.isValid(*iterator, inputLayer_)){
+    if (mapOut.isValid(*iterator, inputLayer_)) {
       grid_map::Position position;
       mapOut.getPosition(*iterator, position);
 
@@ -126,19 +118,19 @@ bool BaseHeightThresholdFilter<T>::update(const T& mapIn, T& mapOut)
       point.x() = position.x();
       point.y() = position.y();
       point.z() = mapIn.at(inputLayer_, *iterator);
-      
+
       // Apply transformation
       point = mapToTarget * point;
 
       // Store in output layer
-      if(point.z() > heightThreshold_){
+      if (point.z() > heightThreshold_) {
         mapOut.at(outputLayer_, *iterator) = setToUpper_;
       } else {
         mapOut.at(outputLayer_, *iterator) = setToLower_;
       }
     }
   }
-  
+
   // Timing
   profiler_ptr_->endEvent("0.update");
   ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
@@ -146,7 +138,7 @@ bool BaseHeightThresholdFilter<T>::update(const T& mapIn, T& mapOut)
   return true;
 }
 
-} /* namespace */
+}  // namespace grid_map
 
 template class grid_map::BaseHeightThresholdFilter<grid_map::GridMap>;
 // Export the filter.

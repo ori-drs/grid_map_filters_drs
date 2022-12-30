@@ -1,9 +1,8 @@
 /*
  * LearnedMotionCostsFilter.hpp
- * 
+ *
  *  Author: Matias Mattamala
  */
-
 
 #pragma once
 
@@ -12,16 +11,16 @@
 #include <string>
 #include <vector>
 
-#include <ros/ros.h>
-#include <tf_conversions/tf_eigen.h>
-#include <tf/transform_listener.h>
 #include <eigen_conversions/eigen_msg.h>
+#include <ros/ros.h>
 #include <std_srvs/Trigger.h>
+#include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 
+#include <pluginlib/class_list_macros.h>
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_cv/grid_map_cv.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
-#include <pluginlib/class_list_macros.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -33,10 +32,8 @@ namespace grid_map {
 /*!
  * Computes a signed distance field by applying a threshold on a layer
  */
-template<typename T>
-class LearnedMotionCostsFilter : public filters::FilterBase<T>
-{
-
+template <typename T>
+class LearnedMotionCostsFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
@@ -62,7 +59,6 @@ class LearnedMotionCostsFilter : public filters::FilterBase<T>
   virtual bool update(const T& mapIn, T& mapOut);
 
  private:
-
   //! Layer the threshold will be evaluated.
   std::string inputLayer_;
 
@@ -89,4 +85,4 @@ class LearnedMotionCostsFilter : public filters::FilterBase<T>
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

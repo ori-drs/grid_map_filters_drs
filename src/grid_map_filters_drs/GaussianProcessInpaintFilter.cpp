@@ -2,36 +2,28 @@
  * GaussianProcessInpaintFilter.cpp
  *
  *  Uses GPs to inpaint an elevation map. It requires the Limbo library
- * 
+ *
  *  Author: Matias Mattamala
  */
 
-
-
-#include <grid_map_filters_drs/GaussianProcessInpaintFilter.hpp>
-#include <grid_map_core/grid_map_core.hpp>
 #include <pluginlib/class_list_macros.h>
-#include <string>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_filters_drs/GaussianProcessInpaintFilter.hpp>
 #include <stdexcept>
+#include <string>
 
 using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-GaussianProcessInpaintFilter<T>::GaussianProcessInpaintFilter()
-    : subsampleSkip_(0)
-{
-}
+template <typename T>
+GaussianProcessInpaintFilter<T>::GaussianProcessInpaintFilter() : subsampleSkip_(0) {}
 
-template<typename T>
-GaussianProcessInpaintFilter<T>::~GaussianProcessInpaintFilter()
-{
-}
+template <typename T>
+GaussianProcessInpaintFilter<T>::~GaussianProcessInpaintFilter() {}
 
-template<typename T>
-bool GaussianProcessInpaintFilter<T>::configure()
-{
+template <typename T>
+bool GaussianProcessInpaintFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("GaussianProcessInpaintFilter");
 
@@ -61,17 +53,15 @@ bool GaussianProcessInpaintFilter<T>::configure()
 
   outputLayerUpper_ = outputLayer_ + "_upper";
   outputLayerLower_ = outputLayer_ + "_lower";
-  outputLayerMean_  = outputLayer_ + "_mean";
-  
+  outputLayerMean_ = outputLayer_ + "_mean";
 
   return true;
 }
 
-template<typename T>
-bool GaussianProcessInpaintFilter<T>::update(const T& mapIn, T& mapOut)
-{
+template <typename T>
+bool GaussianProcessInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("0.update");
-  
+
   mapOut = mapIn;
 
   // Check if layer exists.
@@ -84,7 +74,7 @@ bool GaussianProcessInpaintFilter<T>::update(const T& mapIn, T& mapOut)
   mapOut.add(outputLayer_, mapIn[inputLayer_]);
   mapOut.add(outputLayerUpper_, mapIn[inputLayer_]);
   mapOut.add(outputLayerLower_, mapIn[inputLayer_]);
-  mapOut.add(outputLayerMean_,  mapIn[inputLayer_]);
+  mapOut.add(outputLayerMean_, mapIn[inputLayer_]);
 
   // Create GP
   // the type of the GP
@@ -92,9 +82,9 @@ bool GaussianProcessInpaintFilter<T>::update(const T& mapIn, T& mapOut)
   // using KernelType = kernel::MaternThreeHalves<Params>;
   // using KernelType = kernel::MaternFiveHalves<Params>;
   using KernelType = kernel::SquaredExpARD<Params>;
-  using MeanType   = mean::Data<Params>;
+  using MeanType = mean::Data<Params>;
 
-  using HyperParamOpt = model::gp::KernelLFOpt<Params>; // Optimize only kernel parameters
+  using HyperParamOpt = model::gp::KernelLFOpt<Params>;  // Optimize only kernel parameters
   // using HyperParamOpt = model::gp::KernelMeanLFOpt<Params>; // Optimize kernel parameters and mean
   // using HyperParamOpt = model::gp::MeanLFOpt<Params>; // Optimize only mean
   using GPOpt = model::GP<Params, KernelType, MeanType, HyperParamOpt>;
@@ -105,7 +95,7 @@ bool GaussianProcessInpaintFilter<T>::update(const T& mapIn, T& mapOut)
   GPOpt gp(2, 1);
 
   grid_map::Size gridMapSize = mapIn.getSize();
-  size_t numCells = gridMapSize(0) * gridMapSize(1); 
+  size_t numCells = gridMapSize(0) * gridMapSize(1);
 
   std::vector<Eigen::VectorXd> samples;
   std::vector<Eigen::VectorXd> observations;
@@ -117,15 +107,15 @@ bool GaussianProcessInpaintFilter<T>::update(const T& mapIn, T& mapOut)
   const grid_map::Matrix& data = mapIn[inputLayer_];
   for (grid_map::GridMapIterator iterator(mapOut); !iterator.isPastEnd(); ++iterator) {
     grid_map::Index index(*iterator);
-    if (mapOut.isValid(index, inputLayer_)){
-      if((index(0)% subsampleSkip_ != 0) || (index(1)% subsampleSkip_ != 0)){
+    if (mapOut.isValid(index, inputLayer_)) {
+      if ((index(0) % subsampleSkip_ != 0) || (index(1) % subsampleSkip_ != 0)) {
         continue;
       }
 
       Eigen::VectorXd sample(2);
       sample << double(index(0)), double(index(1));
       samples.push_back(sample);
-      
+
       Eigen::VectorXd obs(1);
       obs << data(index(0), index(1));
       observations.push_back(obs);
@@ -163,9 +153,8 @@ bool GaussianProcessInpaintFilter<T>::update(const T& mapIn, T& mapOut)
     if (!mapOut.isValid(index, inputLayer_)) {
       mapOut.at(outputLayer_, index) = mu(0);
     }
-
   }
-   ROS_WARN_STREAM("after interpolating");
+  ROS_WARN_STREAM("after interpolating");
 
   mapOut.setBasicLayers({});
 
@@ -175,7 +164,7 @@ bool GaussianProcessInpaintFilter<T>::update(const T& mapIn, T& mapOut)
   return true;
 }
 
-} /* namespace */
+}  // namespace grid_map
 
 // Explicitly define the specialization for GridMap
 template class grid_map::GaussianProcessInpaintFilter<grid_map::GridMap>;

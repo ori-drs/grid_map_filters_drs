@@ -2,7 +2,7 @@
  * LearnedMotionCostsFilter.cpp
  *
  *  Request motion costs (risk, energy, time) from the gpu_path_optimizer package using service calls
- * 
+ *
  *  Author: Matias Mattamala
  */
 
@@ -12,19 +12,14 @@ using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-LearnedMotionCostsFilter<T>::LearnedMotionCostsFilter()
-{
-}
+template <typename T>
+LearnedMotionCostsFilter<T>::LearnedMotionCostsFilter() {}
 
-template<typename T>
-LearnedMotionCostsFilter<T>::~LearnedMotionCostsFilter()
-{
-}
+template <typename T>
+LearnedMotionCostsFilter<T>::~LearnedMotionCostsFilter() {}
 
-template<typename T>
-bool LearnedMotionCostsFilter<T>::configure()
-{
+template <typename T>
+bool LearnedMotionCostsFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("LearnedMotionCostsFilter");
 
@@ -64,12 +59,12 @@ bool LearnedMotionCostsFilter<T>::configure()
   tfListener_ = std::make_shared<tf::TransformListener>();
 
   // Initialize subscriber
-  serviceClient_       = nodeHandle_.serviceClient<gpu_path_optimizer::ComputeTraversability>(serviceName_);
+  serviceClient_ = nodeHandle_.serviceClient<gpu_path_optimizer::ComputeTraversability>(serviceName_);
 
   return true;
 }
 
-template<typename T>
+template <typename T>
 bool LearnedMotionCostsFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("0.update");
 
@@ -83,7 +78,6 @@ bool LearnedMotionCostsFilter<T>::update(const T& mapIn, T& mapOut) {
     return false;
   }
 
-  
   // Get temporal grid_map
   grid_map::GridMap requestMap = mapIn;
   for (const auto& layer : mapIn.getLayers()) {
@@ -105,20 +99,18 @@ bool LearnedMotionCostsFilter<T>::update(const T& mapIn, T& mapOut) {
   service.request.input = requestMessage;
 
   // Call service
-  if (!serviceClient_.call(service))
-  {
+  if (!serviceClient_.call(service)) {
     ROS_ERROR_STREAM("Failed to call service [" << serviceName_ << "]");
     return false;
   }
   profiler_ptr_->endEvent("1.service_call");
-
 
   ROS_INFO("Requested cost to gpu_path_optimizer server");
 
   // Extract processed layer
   grid_map::GridMap responseMap;
   GridMapRosConverter::fromMessage(service.response.processed, responseMap);
-  
+
   // Add layer
   mapOut.add(outputLayer_, responseMap.get(costLayer_));
   mapOut.setBasicLayers({});
@@ -126,11 +118,11 @@ bool LearnedMotionCostsFilter<T>::update(const T& mapIn, T& mapOut) {
   // Timing
   profiler_ptr_->endEvent("0.update");
   ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
-  
+
   return true;
 }
 
-} /* namespace */
+}  // namespace grid_map
 
 // Explicitly define the specialization for GridMap to have the filter implementation available for testing.
 template class grid_map::LearnedMotionCostsFilter<grid_map::GridMap>;

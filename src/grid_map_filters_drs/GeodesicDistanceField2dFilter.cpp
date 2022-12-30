@@ -2,7 +2,7 @@
  * GeodesicDistanceField2dFilter.cpp
  *
  *  Implements a Geodesic Distance layer using a binary layer. 0 means obstacles, 1 free space
- * 
+ *
  *  Author: Matias Mattamala
  */
 
@@ -12,22 +12,14 @@ using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-GeodesicDistanceField2dFilter<T>::GeodesicDistanceField2dFilter()
-: attractorPosition_(0, 0),
-  attractorStamp_(0),
-  mapFrame_("not_set")
-{
-}
+template <typename T>
+GeodesicDistanceField2dFilter<T>::GeodesicDistanceField2dFilter() : attractorPosition_(0, 0), attractorStamp_(0), mapFrame_("not_set") {}
 
-template<typename T>
-GeodesicDistanceField2dFilter<T>::~GeodesicDistanceField2dFilter()
-{
-}
+template <typename T>
+GeodesicDistanceField2dFilter<T>::~GeodesicDistanceField2dFilter() {}
 
-template<typename T>
-bool GeodesicDistanceField2dFilter<T>::configure()
-{
+template <typename T>
+bool GeodesicDistanceField2dFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("GeodesicDistanceField2dFilter");
 
@@ -62,7 +54,7 @@ bool GeodesicDistanceField2dFilter<T>::configure()
     ROS_ERROR("Geodesic Distance 2D filter did not find parameter `use_field_smoothing`.");
     return false;
   }
-  ROS_DEBUG("Geodesic Distance 2D filter use_field_smoothing = %s.", (fieldSmoothing_? "true" : "false"));
+  ROS_DEBUG("Geodesic Distance 2D filter use_field_smoothing = %s.", (fieldSmoothing_ ? "true" : "false"));
 
   // Smoothing radius
   if (!filters::FilterBase<T>::getParam(std::string("field_smoothing_radius"), fieldSmoothingRadius_)) {
@@ -83,17 +75,17 @@ bool GeodesicDistanceField2dFilter<T>::configure()
     ROS_ERROR("SDF 2D filter did not find parameter `normalize_gradients`.");
     return false;
   }
-  ROS_DEBUG("SDF 2D filter normalize_gradients = %s.", (normalizeGradients_? "true" : "false"));
+  ROS_DEBUG("SDF 2D filter normalize_gradients = %s.", (normalizeGradients_ ? "true" : "false"));
 
   // Initialize TF listener
   tfListener_ = std::make_shared<tf::TransformListener>();
 
   // Initialize subscriber
-  attractorSubscriber_       = nodeHandle_.subscribe(std::string(attractorTopic_), 1, &GeodesicDistanceField2dFilter::attractorCallback, this);
+  attractorSubscriber_ = nodeHandle_.subscribe(std::string(attractorTopic_), 1, &GeodesicDistanceField2dFilter::attractorCallback, this);
 
   // Initialize output layer variables
-  obstacleLayer_  = outputLayer_ + "_obstacle_space";
-  freeSpaceLayer_ = outputLayer_  + "_free_space";
+  obstacleLayer_ = outputLayer_ + "_obstacle_space";
+  freeSpaceLayer_ = outputLayer_ + "_free_space";
   gradientXLayer_ = outputLayer_ + "_gradient_x";
   gradientYLayer_ = outputLayer_ + "_gradient_y";
   gradientZLayer_ = outputLayer_ + "_gradient_z";
@@ -101,10 +93,9 @@ bool GeodesicDistanceField2dFilter<T>::configure()
   return true;
 }
 
-template<typename T>
+template <typename T>
 void GeodesicDistanceField2dFilter<T>::attractorCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg) {
-
-  if(mapFrame_ == "not_set"){
+  if (mapFrame_ == "not_set") {
     return;
   }
 
@@ -114,27 +105,26 @@ void GeodesicDistanceField2dFilter<T>::attractorCallback(const geometry_msgs::Po
   Eigen::Isometry3d eigen_T_fixed_goal = Eigen::Isometry3d::Identity();
   tf::poseMsgToEigen(msg->pose.pose, eigen_T_fixed_goal);
 
-  if (goalFixedFrame != mapFrame_){
+  if (goalFixedFrame != mapFrame_) {
     tf::StampedTransform tf_T_map_goal;
-    
+
     try {
       tfListener_->lookupTransform(mapFrame_, goalFixedFrame, ros::Time(0), tf_T_map_goal);
 
       // Convert to Isometry3d
       Eigen::Isometry3d eigen_T_map_fixed = Eigen::Isometry3d::Identity();
-      tf::transformTFToEigen (tf_T_map_goal, eigen_T_map_fixed);
+      tf::transformTFToEigen(tf_T_map_goal, eigen_T_map_fixed);
 
       // Update goal
       eigen_T_fixed_goal = eigen_T_map_fixed * eigen_T_fixed_goal;
-    }
-    catch (tf::TransformException& ex){
-      ROS_ERROR("%s",ex.what());
+    } catch (tf::TransformException& ex) {
+      ROS_ERROR("%s", ex.what());
       return;
     }
   }
 
   // If the timestamps are the same, skip (to avoid TF_REPEATED_DATA issue)
-  if(msg->header.stamp == attractorStamp_) {
+  if (msg->header.stamp == attractorStamp_) {
     return;
   }
 
@@ -143,11 +133,10 @@ void GeodesicDistanceField2dFilter<T>::attractorCallback(const geometry_msgs::Po
   attractorPosition_.y() = eigen_T_fixed_goal.translation().y();
   attractorStamp_ = msg->header.stamp;
 
-  ROS_DEBUG_STREAM("[GeodesicDistanceField2dFilter] Attractor: [" 
-                   << attractorPosition_.x() << ", " << attractorPosition_.y() << "]" );
+  ROS_DEBUG_STREAM("[GeodesicDistanceField2dFilter] Attractor: [" << attractorPosition_.x() << ", " << attractorPosition_.y() << "]");
 }
 
-template<typename T>
+template <typename T>
 bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("0.update");
 
@@ -164,10 +153,10 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   // Get resolution
   double resolution = mapOut.getResolution();
 
-  if(mapFrame_ == "not_set"){
+  if (mapFrame_ == "not_set") {
     // Set standard goal at the center
-    attractorPosition_.x() = mapOut.getSize()(0)/2 * resolution;
-    attractorPosition_.y() = mapOut.getSize()(1)/2 * resolution;
+    attractorPosition_.x() = mapOut.getSize()(0) / 2 * resolution;
+    attractorPosition_.y() = mapOut.getSize()(1) / 2 * resolution;
   }
 
   // Get frame of elevation map
@@ -178,18 +167,17 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::Mat cvLayer;
   const float minValue = mapOut.get(inputLayer_).minCoeffOfFinites();
   const float maxValue = mapOut.get(inputLayer_).maxCoeffOfFinites();
-  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, 
-                                                  minValue, maxValue, cvLayer);  
+  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, minValue, maxValue, cvLayer);
   cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
   cvLayer.convertTo(cvLayer, CV_32F);
-  cvLayer*=255;
+  cvLayer *= 255;
 
   // Apply threshold and compute obstacle masks
   cv::Mat cvFreeSpaceMask = cvLayer;
   cv::Mat cvObstacleSpaceMask;
 
   // Binarize input layer
-  cv::threshold(cvLayer, cvFreeSpaceMask, 255*threshold_, 255, cv::THRESH_BINARY);	
+  cv::threshold(cvLayer, cvFreeSpaceMask, 255 * threshold_, 255, cv::THRESH_BINARY);
   cvFreeSpaceMask.convertTo(cvFreeSpaceMask, CV_8UC1);
   cv::bitwise_not(cvFreeSpaceMask, cvObstacleSpaceMask);
   cvObstacleSpaceMask.convertTo(cvObstacleSpaceMask, CV_32F);
@@ -197,26 +185,30 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
   // Preallocate output layer
   cv::Mat cvGeodesicDistance(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
-  cv::Mat maskedGradientsX(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));;
-  cv::Mat maskedGradientsY(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));;
-  cv::Mat cvGradientsX(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));;  
-  cv::Mat cvGradientsY(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));;
+  cv::Mat maskedGradientsX(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
+  ;
+  cv::Mat maskedGradientsY(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
+  ;
+  cv::Mat cvGradientsX(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
+  ;
+  cv::Mat cvGradientsY(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
+  ;
   cv::Mat cvGradientsZ(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
 
   // Add free and occupied space as layers
-  addMatAsLayer(cvObstacleSpaceMask/255, obstacleLayer_, mapOut);
-  addMatAsLayer(cvFreeSpaceMask/255, freeSpaceLayer_, mapOut);
+  addMatAsLayer(cvObstacleSpaceMask / 255, obstacleLayer_, mapOut);
+  addMatAsLayer(cvFreeSpaceMask / 255, freeSpaceLayer_, mapOut);
 
   // This little hack makes the fast marching method work
-  cvObstacleSpaceMask*=10; // This is to enforce the difference between obstacles and free space
-  cvObstacleSpaceMask+=1;    // This adds a baseline layer to start the propagation
+  cvObstacleSpaceMask *= 10;  // This is to enforce the difference between obstacles and free space
+  cvObstacleSpaceMask += 1;   // This adds a baseline layer to start the propagation
 
   // Smooth field by applying Gaussian Smoothing
-  // This is similar to the 'saturation' method used in 
+  // This is similar to the 'saturation' method used in
   // FM2 by Javier V. Gomez: https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6582543
-  if(fieldSmoothing_){
-    int radiusInPixels =  std::max((int)std::ceil(fieldSmoothingRadius_ / mapIn.getResolution()), 3); // Minimum kernel of size 3
-    radiusInPixels = (radiusInPixels % 2 == 0)? radiusInPixels + 1 : radiusInPixels;
+  if (fieldSmoothing_) {
+    int radiusInPixels = std::max((int)std::ceil(fieldSmoothingRadius_ / mapIn.getResolution()), 3);  // Minimum kernel of size 3
+    radiusInPixels = (radiusInPixels % 2 == 0) ? radiusInPixels + 1 : radiusInPixels;
 
     cv::GaussianBlur(cvObstacleSpaceMask, cvObstacleSpaceMask, cv::Size(radiusInPixels, radiusInPixels), 0);
   }
@@ -228,7 +220,7 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   grid_map::Index index = getAttractorIndex(mapOut, attractorPosition_);
 
   // Compute Geodesic field
-  seeds.push_back(cv::Point(index.y(), index.x())); // We need to flip the components because it's an image
+  seeds.push_back(cv::Point(index.y(), index.x()));  // We need to flip the components because it's an image
 
   // Compute Geodesic Distance
   GeodesicDistance<float>(cvObstacleSpaceMask, seeds, cvGeodesicDistance);
@@ -242,7 +234,7 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::Sobel(cvGeodesicDistance, cvGradientsX, -1, 0, 1, 3, resolution);
   cv::Sobel(cvGeodesicDistance, cvGradientsY, -1, 1, 0, 3, resolution);
 
-  if(normalizeGradients_) {
+  if (normalizeGradients_) {
     // Compute norm
     cv::Mat sqGradientsX;
     cv::Mat sqGradientsY;
@@ -250,7 +242,7 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
     cv::pow(cvGradientsY, 2, sqGradientsY);
     cv::Mat normNormal;
     cv::sqrt(sqGradientsX + sqGradientsY, normNormal);
-    
+
     // Normalize
     cvGradientsX /= (normNormal + std::numeric_limits<float>::epsilon());
     cvGradientsY /= (normNormal + std::numeric_limits<float>::epsilon());
@@ -264,30 +256,30 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   addMatAsLayer(cvGradientsY, gradientYLayer_, mapOut);
   addMatAsLayer(cvGradientsZ, gradientZLayer_, mapOut);
   profiler_ptr_->endEvent("4.gdf_add_layers");
-  
+
   mapOut.setBasicLayers({});
 
   // Timing
   profiler_ptr_->endEvent("0.update");
   ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
-  
+
   return true;
 }
 
-template<typename T>
+template <typename T>
 grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gridMap, const grid_map::Position& attractorPosition) {
   // Preallocate output index
   grid_map::Index index;
-  
+
   // Get closest attractor position
   Position closestAttractor = gridMap.getClosestPositionInMap(attractorPosition);
-  
+
   // Check if the attractor is in traversable areas
   gridMap.getIndex(closestAttractor, index);
 
   // Sanity check
-  index.x() = std::min(index.x(), gridMap.getSize().x()-1);
-  index.y() = std::min(index.y(), gridMap.getSize().y()-1);
+  index.x() = std::min(index.x(), gridMap.getSize().x() - 1);
+  index.y() = std::min(index.y(), gridMap.getSize().y() - 1);
   index.x() = std::max(index.x(), 0);
   index.y() = std::max(index.y(), 0);
   // std::cout << "Grid map length        : " << gridMap.getLength().transpose() << std::endl;
@@ -301,14 +293,14 @@ grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gri
   // ROS_WARN_STREAM("attractor traversable? " << traversable);
 
   // If not traversable, we need to find a new candidate attractor
-  if(!traversable) {
-    double radius = gridMap.getSize()(0) * gridMap.getResolution(); // meters
+  if (!traversable) {
+    double radius = gridMap.getSize()(0) * gridMap.getResolution();  // meters
     // ROS_WARN_STREAM("attractor spiral radius: " << radius);
 
     for (grid_map::SpiralIterator iterator(gridMap, closestAttractor, radius); !iterator.isPastEnd(); ++iterator) {
-      if(gridMap.isValid(*iterator, freeSpaceLayer_)) {
+      if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
         grid_map::Index closestIndex = *iterator;
-        if(gridMap.at(freeSpaceLayer_, closestIndex) > 0) {
+        if (gridMap.at(freeSpaceLayer_, closestIndex) > 0) {
           index = closestIndex;
           // ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
           break;
@@ -318,35 +310,34 @@ grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gri
   }
   // ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
   // cv::waitKey(10);
-  
+
   return index;
 }
 
-template<typename T>
-void GeodesicDistanceField2dFilter<T>::addMatAsLayer(const cv::Mat& mat, const std::string& layerName, grid_map::GridMap& gridMap, double resolution)
-{
+template <typename T>
+void GeodesicDistanceField2dFilter<T>::addMatAsLayer(const cv::Mat& mat, const std::string& layerName, grid_map::GridMap& gridMap,
+                                                     double resolution) {
   // ROS_WARN_STREAM("trying to add layer [" << layerName << "]" << mat.rows << " x " << mat.cols);
   // Get max and min
   double minDistance, maxDistance;
   cv::minMaxLoc(mat, &minDistance, &maxDistance);
 
-  minDistance*= resolution;
-  maxDistance*= resolution;
+  minDistance *= resolution;
+  maxDistance *= resolution;
 
   // cv::namedWindow(layerName + "_original", cv::WINDOW_NORMAL );
   // cv::imshow(layerName + "_original", mat);
-  
+
   // Normalize sdf to get a greyscale image
   cv::Mat normalized;
   cv::normalize(mat, normalized, 0, 1.0, cv::NORM_MINMAX);
   normalized.convertTo(normalized, CV_32F);
 
   // Add layer to elevation map
-  grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(normalized, layerName,
-                                                  gridMap, minDistance, maxDistance);
+  grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(normalized, layerName, gridMap, minDistance, maxDistance);
 }
 
-} /* namespace */
+}  // namespace grid_map
 
 // Explicitly define the specialization for GridMap to have the filter implementation available for testing.
 template class grid_map::GeodesicDistanceField2dFilter<grid_map::GridMap>;

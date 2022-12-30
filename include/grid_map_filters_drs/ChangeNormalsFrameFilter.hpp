@@ -4,7 +4,6 @@
  *  Author: Matias Mattamala
  */
 
-
 #pragma once
 
 #include <filters/filter_base.hpp>
@@ -12,18 +11,16 @@
 #include <string>
 #include <vector>
 
-#include <tf_conversions/tf_eigen.h>
 #include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 
 namespace grid_map {
 
 /*!
  * Rotates normal vectors to be consistent with base frame
  */
-template<typename T>
-class ChangeNormalsFrameFilter : public filters::FilterBase<T>
-{
-
+template <typename T>
+class ChangeNormalsFrameFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
@@ -49,7 +46,6 @@ class ChangeNormalsFrameFilter : public filters::FilterBase<T>
   virtual bool update(const T& mapIn, T& mapOut);
 
  private:
-
   //! Input layer prefix for normals
   std::string inputNormalLayersPrefix_;
 
@@ -68,9 +64,9 @@ class ChangeNormalsFrameFilter : public filters::FilterBase<T>
   std::string xOutputLayer_;
   std::string yOutputLayer_;
   std::string zOutputLayer_;
-  
+
   //! Profiler
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

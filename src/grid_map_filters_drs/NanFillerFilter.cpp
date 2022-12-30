@@ -2,36 +2,28 @@
  * NanFillerFilter.cpp
  *
  *  Replaces NaNs by a fixed value
- * 
+ *
  *  Author: Matias Mattamala
  */
 
-
-
-#include <grid_map_filters_drs/NanFillerFilter.hpp>
-#include <grid_map_core/grid_map_core.hpp>
 #include <pluginlib/class_list_macros.h>
-#include <string>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_filters_drs/NanFillerFilter.hpp>
 #include <stdexcept>
+#include <string>
 
 using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-NanFillerFilter<T>::NanFillerFilter()
-    : setTo_("0.0")
-{
-}
+template <typename T>
+NanFillerFilter<T>::NanFillerFilter() : setTo_("0.0") {}
 
-template<typename T>
-NanFillerFilter<T>::~NanFillerFilter()
-{
-}
+template <typename T>
+NanFillerFilter<T>::~NanFillerFilter() {}
 
-template<typename T>
-bool NanFillerFilter<T>::configure()
-{
+template <typename T>
+bool NanFillerFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("NanFillerFilter");
 
@@ -65,11 +57,10 @@ bool NanFillerFilter<T>::configure()
   return true;
 }
 
-template<typename T>
-bool NanFillerFilter<T>::update(const T& mapIn, T& mapOut)
-{
+template <typename T>
+bool NanFillerFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("0.update");
-  
+
   mapOut = mapIn;
 
   // Check if layer exists.
@@ -83,7 +74,7 @@ bool NanFillerFilter<T>::update(const T& mapIn, T& mapOut)
 
   // Precompute value using setTo options
   float newValue = 0.0;
-  if(setTo_ == "min") {
+  if (setTo_ == "min") {
     newValue = mapOut.get(inputLayer_).minCoeffOfFinites();
     ROS_DEBUG_STREAM("[NanFillerFilter] newValue (min): " << newValue);
 
@@ -98,7 +89,7 @@ bool NanFillerFilter<T>::update(const T& mapIn, T& mapOut)
   } else if (setTo_ == "fixed_value") {
     newValue = value_;
     ROS_DEBUG_STREAM("[NanFillerFilter] newValue (fixed_value): " << value_);
-  
+
   } else {
     ROS_WARN_STREAM("[NanFillerFilter] set_to option not valid. Using minimum by default");
     newValue = mapOut.get(inputLayer_).minCoeffOfFinites();
@@ -122,7 +113,7 @@ bool NanFillerFilter<T>::update(const T& mapIn, T& mapOut)
   return true;
 }
 
-} /* namespace */
+}  // namespace grid_map
 
 // Explicitly define the specialization for GridMap
 template class grid_map::NanFillerFilter<grid_map::GridMap>;

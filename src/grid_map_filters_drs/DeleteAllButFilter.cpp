@@ -2,29 +2,25 @@
  * DeleteAllButFilter.cpp
  *
  *  Removes all layers but the ones on the list
- * 
+ *
  *  Author: Matias Mattamala
  */
 
-#include <grid_map_filters_drs/DeleteAllButFilter.hpp>
-#include <grid_map_core/grid_map_core.hpp>
 #include <pluginlib/class_list_macros.h>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_filters_drs/DeleteAllButFilter.hpp>
 
 using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-DeleteAllButFilter<T>::DeleteAllButFilter()
-{
-}
+template <typename T>
+DeleteAllButFilter<T>::DeleteAllButFilter() {}
 
-template<typename T>
-DeleteAllButFilter<T>::~DeleteAllButFilter()
-{
-}
+template <typename T>
+DeleteAllButFilter<T>::~DeleteAllButFilter() {}
 
-template<typename T>
+template <typename T>
 bool DeleteAllButFilter<T>::configure() {
   // Load Parameters
   if (!FilterBase<T>::getParam(std::string("layers"), keepLayers_)) {
@@ -35,7 +31,7 @@ bool DeleteAllButFilter<T>::configure() {
   return true;
 }
 
-template<typename T>
+template <typename T>
 bool DeleteAllButFilter<T>::update(const T& mapIn, T& mapOut) {
   mapOut = mapIn;
 
@@ -51,10 +47,8 @@ bool DeleteAllButFilter<T>::update(const T& mapIn, T& mapOut) {
   return true;
 }
 
-template<typename T>
-bool DeleteAllButFilter<T>::exists(const std::string& layer, 
-                                const std::vector<std::string>& keepLayers) const {
-
+template <typename T>
+bool DeleteAllButFilter<T>::exists(const std::string& layer, const std::vector<std::string>& keepLayers) const {
   const auto layerIterator = std::find(keepLayers.begin(), keepLayers.end(), layer);
   return layerIterator != keepLayers.end();
 }

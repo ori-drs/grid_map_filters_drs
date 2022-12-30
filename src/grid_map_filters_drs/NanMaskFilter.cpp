@@ -2,36 +2,28 @@
  * NanMaskFilter.cpp
  *
  *  Generates a new layer with a mask that indicates the NaN values
- * 
+ *
  *  Author: Matias Mattamala
  */
 
-
-
-#include <grid_map_filters_drs/NanMaskFilter.hpp>
-#include <grid_map_core/grid_map_core.hpp>
 #include <pluginlib/class_list_macros.h>
-#include <string>
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_filters_drs/NanMaskFilter.hpp>
 #include <stdexcept>
+#include <string>
 
 using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-NanMaskFilter<T>::NanMaskFilter()
-    : setTo_("0.0")
-{
-}
+template <typename T>
+NanMaskFilter<T>::NanMaskFilter() : setTo_("0.0") {}
 
-template<typename T>
-NanMaskFilter<T>::~NanMaskFilter()
-{
-}
+template <typename T>
+NanMaskFilter<T>::~NanMaskFilter() {}
 
-template<typename T>
-bool NanMaskFilter<T>::configure()
-{
+template <typename T>
+bool NanMaskFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("NanMaskFilter");
 
@@ -53,11 +45,10 @@ bool NanMaskFilter<T>::configure()
   return true;
 }
 
-template<typename T>
-bool NanMaskFilter<T>::update(const T& mapIn, T& mapOut)
-{
+template <typename T>
+bool NanMaskFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("0.update");
-  
+
   mapOut = mapIn;
 
   // Check if layer exists.
@@ -84,7 +75,7 @@ bool NanMaskFilter<T>::update(const T& mapIn, T& mapOut)
   return true;
 }
 
-} /* namespace */
+}  // namespace grid_map
 
 // Explicitly define the specialization for GridMap
 template class grid_map::NanMaskFilter<grid_map::GridMap>;

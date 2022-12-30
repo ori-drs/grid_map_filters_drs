@@ -1,9 +1,8 @@
 /*
  * SignedDistanceField2dFilter.hpp
- * 
+ *
  *  Author: Matias Mattamala
  */
-
 
 #pragma once
 
@@ -12,21 +11,19 @@
 #include <string>
 #include <vector>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <pluginlib/class_list_macros.h>
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_cv/grid_map_cv.hpp>
-#include <pluginlib/class_list_macros.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 namespace grid_map {
 
 /*!
  * Computes a signed distance field by applying a threshold on a layer
  */
-template<typename T>
-class SignedDistanceField2dFilter : public filters::FilterBase<T>
-{
-
+template <typename T>
+class SignedDistanceField2dFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
@@ -55,7 +52,7 @@ class SignedDistanceField2dFilter : public filters::FilterBase<T>
   /*!
    * Helper to fill layers with cv::Mats
    */
-  void addMatAsLayer(const cv::Mat& m, const std::string& layerName, grid_map::GridMap& gridMap, double resolution=1.0);
+  void addMatAsLayer(const cv::Mat& m, const std::string& layerName, grid_map::GridMap& gridMap, double resolution = 1.0);
 
   //! Layer the threshold will be evaluated.
   std::string inputLayer_;
@@ -73,4 +70,4 @@ class SignedDistanceField2dFilter : public filters::FilterBase<T>
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

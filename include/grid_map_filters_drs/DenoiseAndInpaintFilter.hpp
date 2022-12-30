@@ -1,25 +1,23 @@
 /*
  * DenoiseAndInpaintFilter.cpp
  *
- *  Based on original InpaintFilter 
+ *  Based on original InpaintFilter
  *  by Tanja Baumann, Peter Fankhauser (ETH Zurich, ANYbotics)
- * 
+ *
  *  Author: Matias Mattamala
  */
-
-
 
 #pragma once
 
 #include <filters/filter_base.hpp>
 #include <grid_map_filters_drs/utils/profiler.hpp>
 
-//OpenCV
-#include "grid_map_cv/grid_map_cv.hpp"
+// OpenCV
 #include <opencv2/opencv.hpp>
+#include "grid_map_cv/grid_map_cv.hpp"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace grid_map {
 
@@ -27,9 +25,8 @@ namespace grid_map {
  * Uses OpenCV function to inpaint/fill holes in the input layer.
  * It also enables to prefilter the image before inpainting
  */
-template<typename T>
+template <typename T>
 class DenoiseAndInpaintFilter : public filters::FilterBase<T> {
-
  public:
   /*!
    * Constructor
@@ -92,4 +89,4 @@ class DenoiseAndInpaintFilter : public filters::FilterBase<T> {
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

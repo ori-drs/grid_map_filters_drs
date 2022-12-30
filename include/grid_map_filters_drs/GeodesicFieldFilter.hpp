@@ -1,9 +1,8 @@
 /*
  * GeodesicFieldFilter.hpp
- * 
+ *
  *  Author: Matias Mattamala
  */
-
 
 #pragma once
 
@@ -12,17 +11,17 @@
 #include <string>
 #include <vector>
 
-#include <ros/ros.h>
-#include <tf_conversions/tf_eigen.h>
-#include <tf/transform_listener.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <ros/ros.h>
 #include <std_srvs/Trigger.h>
+#include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 
-#include <grid_map_filters_drs/thirdparty/GeodesicDistanceTransform.hpp>
+#include <pluginlib/class_list_macros.h>
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_cv/grid_map_cv.hpp>
-#include <pluginlib/class_list_macros.h>
+#include <grid_map_filters_drs/thirdparty/GeodesicDistanceTransform.hpp>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -32,10 +31,8 @@ namespace grid_map {
 /*!
  * Computes a signed distance field by applying a threshold on a layer
  */
-template<typename T>
-class GeodesicFieldFilter : public filters::FilterBase<T>
-{
-
+template <typename T>
+class GeodesicFieldFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
@@ -69,7 +66,7 @@ class GeodesicFieldFilter : public filters::FilterBase<T>
   /*!
    * Helper to fill layers with cv::Mats
    */
-  void addMatAsLayer(const cv::Mat& m, const std::string& layerName, grid_map::GridMap& gridMap, double resolution=1.0);
+  void addMatAsLayer(const cv::Mat& m, const std::string& layerName, grid_map::GridMap& gridMap, double resolution = 1.0);
 
   /*!
    * Subscribers the attractor from a pose message
@@ -121,4 +118,4 @@ class GeodesicFieldFilter : public filters::FilterBase<T>
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

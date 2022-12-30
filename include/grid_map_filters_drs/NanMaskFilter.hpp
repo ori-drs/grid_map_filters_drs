@@ -4,7 +4,6 @@
  *  Author: Matias Mattamala
  */
 
-
 #pragma once
 
 #include <filters/filter_base.hpp>
@@ -17,10 +16,8 @@ namespace grid_map {
 /*!
  * Sets nan values to fixed value
  */
-template<typename T>
-class NanMaskFilter : public filters::FilterBase<T>
-{
-
+template <typename T>
+class NanMaskFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
@@ -46,7 +43,6 @@ class NanMaskFilter : public filters::FilterBase<T>
   virtual bool update(const T& mapIn, T& mapOut);
 
  private:
-
   //! Layer the threshold will be evaluated.
   std::string inputLayer_;
 
@@ -63,4 +59,4 @@ class NanMaskFilter : public filters::FilterBase<T>
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

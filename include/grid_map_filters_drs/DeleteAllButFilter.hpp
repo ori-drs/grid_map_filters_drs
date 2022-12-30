@@ -2,15 +2,15 @@
  * DeleteAllButFilter.hpp
  *
  *  Removes all layers but the ones on the list
- * 
+ *
  *  Author: Matias Mattamala
  */
 
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 #include <filters/filter_base.hpp>
 
@@ -19,7 +19,7 @@ namespace grid_map {
 /*!
  * Deletion filter class deletes layers of a grid map.
  */
-template<typename T>
+template <typename T>
 class DeleteAllButFilter : public filters::FilterBase<T> {
  public:
   /*!

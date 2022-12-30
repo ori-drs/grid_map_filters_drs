@@ -3,7 +3,7 @@
  *
  *  Computes a geodesic field from a layer, given an attractor
  *  Note: Requires more testing, features can otentially be merged into GeodesicDistanceField2dFilter
- * 
+ *
  *  Author: Matias Mattamala
  */
 
@@ -13,22 +13,14 @@ using namespace filters;
 
 namespace grid_map {
 
-template<typename T>
-GeodesicFieldFilter<T>::GeodesicFieldFilter()
-: attractorPosition_(0, 0),
-  attractorStamp_(0),
-  mapFrame_("not_set")
-{
-}
+template <typename T>
+GeodesicFieldFilter<T>::GeodesicFieldFilter() : attractorPosition_(0, 0), attractorStamp_(0), mapFrame_("not_set") {}
 
-template<typename T>
-GeodesicFieldFilter<T>::~GeodesicFieldFilter()
-{
-}
+template <typename T>
+GeodesicFieldFilter<T>::~GeodesicFieldFilter() {}
 
-template<typename T>
-bool GeodesicFieldFilter<T>::configure()
-{
+template <typename T>
+bool GeodesicFieldFilter<T>::configure() {
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("GeodesicFieldFilter");
 
@@ -62,17 +54,17 @@ bool GeodesicFieldFilter<T>::configure()
     ROS_ERROR("SDF 2D filter did not find parameter `normalize_gradients`.");
     return false;
   }
-  ROS_DEBUG("SDF 2D filter normalize_gradients = %s.", (normalizeGradients_? "true" : "false"));
+  ROS_DEBUG("SDF 2D filter normalize_gradients = %s.", (normalizeGradients_ ? "true" : "false"));
 
   // Initialize TF listener
   tfListener_ = std::make_shared<tf::TransformListener>();
 
   // Initialize subscriber
-  attractorSubscriber_       = nodeHandle_.subscribe(std::string(attractorTopic_), 1, &GeodesicFieldFilter::attractorCallback, this);
+  attractorSubscriber_ = nodeHandle_.subscribe(std::string(attractorTopic_), 1, &GeodesicFieldFilter::attractorCallback, this);
 
   // Initialize output layer variables
-  obstacleLayer_  = outputLayer_ + "_obstacle_space";
-  freeSpaceLayer_ = outputLayer_  + "_free_space";
+  obstacleLayer_ = outputLayer_ + "_obstacle_space";
+  freeSpaceLayer_ = outputLayer_ + "_free_space";
   gradientXLayer_ = outputLayer_ + "_gradient_x";
   gradientYLayer_ = outputLayer_ + "_gradient_y";
   gradientZLayer_ = outputLayer_ + "_gradient_z";
@@ -80,10 +72,9 @@ bool GeodesicFieldFilter<T>::configure()
   return true;
 }
 
-template<typename T>
+template <typename T>
 void GeodesicFieldFilter<T>::attractorCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg) {
-
-  if(mapFrame_ == "not_set"){
+  if (mapFrame_ == "not_set") {
     return;
   }
 
@@ -93,27 +84,26 @@ void GeodesicFieldFilter<T>::attractorCallback(const geometry_msgs::PoseWithCova
   Eigen::Isometry3d eigen_T_fixed_goal = Eigen::Isometry3d::Identity();
   tf::poseMsgToEigen(msg->pose.pose, eigen_T_fixed_goal);
 
-  if (goalFixedFrame != mapFrame_){
+  if (goalFixedFrame != mapFrame_) {
     tf::StampedTransform tf_T_map_goal;
-    
+
     try {
       tfListener_->lookupTransform(mapFrame_, goalFixedFrame, ros::Time(0), tf_T_map_goal);
 
       // Convert to Isometry3d
       Eigen::Isometry3d eigen_T_map_fixed = Eigen::Isometry3d::Identity();
-      tf::transformTFToEigen (tf_T_map_goal, eigen_T_map_fixed);
+      tf::transformTFToEigen(tf_T_map_goal, eigen_T_map_fixed);
 
       // Update goal
       eigen_T_fixed_goal = eigen_T_map_fixed * eigen_T_fixed_goal;
-    }
-    catch (tf::TransformException& ex){
-      ROS_ERROR("%s",ex.what());
+    } catch (tf::TransformException& ex) {
+      ROS_ERROR("%s", ex.what());
       return;
     }
   }
 
   // If the timestamps are the same, skip (to avoid TF_REPEATED_DATA issue)
-  if(msg->header.stamp == attractorStamp_) {
+  if (msg->header.stamp == attractorStamp_) {
     return;
   }
 
@@ -122,11 +112,10 @@ void GeodesicFieldFilter<T>::attractorCallback(const geometry_msgs::PoseWithCova
   attractorPosition_.y() = eigen_T_fixed_goal.translation().y();
   attractorStamp_ = msg->header.stamp;
 
-  ROS_DEBUG_STREAM("[GeodesicFieldFilter] Attractor: [" 
-                   << attractorPosition_.x() << ", " << attractorPosition_.y() << "]" );
+  ROS_DEBUG_STREAM("[GeodesicFieldFilter] Attractor: [" << attractorPosition_.x() << ", " << attractorPosition_.y() << "]");
 }
 
-template<typename T>
+template <typename T>
 bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   profiler_ptr_->startEvent("0.update");
 
@@ -143,10 +132,10 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   // Get resolution
   double resolution = mapOut.getResolution();
 
-  if(mapFrame_ == "not_set"){
+  if (mapFrame_ == "not_set") {
     // Set standard goal at the center
-    attractorPosition_.x() = mapOut.getSize()(0)/2 * resolution;
-    attractorPosition_.y() = mapOut.getSize()(1)/2 * resolution;
+    attractorPosition_.x() = mapOut.getSize()(0) / 2 * resolution;
+    attractorPosition_.y() = mapOut.getSize()(1) / 2 * resolution;
   }
 
   // Get frame of elevation map
@@ -156,17 +145,18 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::Mat cvLayer;
   const float minValue = mapOut.get(inputLayer_).minCoeffOfFinites();
   const float maxValue = mapOut.get(inputLayer_).maxCoeffOfFinites();
-  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, 
-                                                  minValue, maxValue, cvLayer);  
+  grid_map::GridMapCvConverter::toImage<float, 1>(mapOut, inputLayer_, CV_32F, minValue, maxValue, cvLayer);
   cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
   cvLayer.convertTo(cvLayer, CV_32F);
 
-  cvLayer+=0.1;
+  cvLayer += 0.1;
 
   // Preallocate output layer
   cv::Mat cvGeodesicDistance(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
-  cv::Mat cvGradientsX(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));;  
-  cv::Mat cvGradientsY(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));;
+  cv::Mat cvGradientsX(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
+  ;
+  cv::Mat cvGradientsY(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
+  ;
   cv::Mat cvGradientsZ(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
 
   // Prepare seeds
@@ -174,7 +164,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   grid_map::Index index = getAttractorIndex(mapOut, attractorPosition_);
 
   // Compute Geodesic field
-  seeds.push_back(cv::Point(index.y(), index.x())); // We need to flip the components because it's an image
+  seeds.push_back(cv::Point(index.y(), index.x()));  // We need to flip the components because it's an image
 
   // Compute Geodesic Distance
   GeodesicDistance<float>(cvLayer, seeds, cvGeodesicDistance);
@@ -186,7 +176,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::Sobel(cvGeodesicDistance, cvGradientsX, -1, 0, 1, 3, resolution);
   cv::Sobel(cvGeodesicDistance, cvGradientsY, -1, 1, 0, 3, resolution);
 
-  if(normalizeGradients_) {
+  if (normalizeGradients_) {
     // Compute norm
     cv::Mat sqGradientsX;
     cv::Mat sqGradientsY;
@@ -194,7 +184,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
     cv::pow(cvGradientsY, 2, sqGradientsY);
     cv::Mat normNormal;
     cv::sqrt(sqGradientsX + sqGradientsY, normNormal);
-    
+
     // Normalize
     cvGradientsX /= normNormal;
     cvGradientsY /= normNormal;
@@ -205,30 +195,30 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   addMatAsLayer(cvGradientsX, gradientXLayer_, mapOut);
   addMatAsLayer(cvGradientsY, gradientYLayer_, mapOut);
   addMatAsLayer(cvGradientsZ, gradientZLayer_, mapOut);
-  
+
   mapOut.setBasicLayers({});
 
   // Timing
   profiler_ptr_->endEvent("0.update");
   ROS_DEBUG_STREAM_THROTTLE(1, "-- Profiler report (throttled (1s)\n" << profiler_ptr_->getReport());
-  
+
   return true;
 }
 
-template<typename T>
+template <typename T>
 grid_map::Index GeodesicFieldFilter<T>::getAttractorIndex(const T& gridMap, const grid_map::Position& attractorPosition) {
   // Preallocate output index
   grid_map::Index index;
-  
+
   // Get closest attractor position
   Position closestAttractor = gridMap.getClosestPositionInMap(attractorPosition);
-  
+
   // Check if the attractor is in traversable areas
   gridMap.getIndex(closestAttractor, index);
 
   // // Sanity check
-  index.x() = std::min(index.x(), gridMap.getSize().x()-1);
-  index.y() = std::min(index.y(), gridMap.getSize().y()-1);
+  index.x() = std::min(index.x(), gridMap.getSize().x() - 1);
+  index.y() = std::min(index.y(), gridMap.getSize().y() - 1);
   index.x() = std::max(index.x(), 0);
   index.y() = std::max(index.y(), 0);
 
@@ -253,35 +243,34 @@ grid_map::Index GeodesicFieldFilter<T>::getAttractorIndex(const T& gridMap, cons
   // }
   // ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
   // cv::waitKey(10);
-  
+
   return index;
 }
 
-template<typename T>
-void GeodesicFieldFilter<T>::addMatAsLayer(const cv::Mat& mat, const std::string& layerName, grid_map::GridMap& gridMap, double resolution)
-{
+template <typename T>
+void GeodesicFieldFilter<T>::addMatAsLayer(const cv::Mat& mat, const std::string& layerName, grid_map::GridMap& gridMap,
+                                           double resolution) {
   // ROS_WARN_STREAM("trying to add layer [" << layerName << "]" << mat.rows << " x " << mat.cols);
   // Get max and min
   double minDistance, maxDistance;
   cv::minMaxLoc(mat, &minDistance, &maxDistance);
 
-  minDistance*= resolution;
-  maxDistance*= resolution;
+  minDistance *= resolution;
+  maxDistance *= resolution;
 
   // cv::namedWindow(layerName + "_original", cv::WINDOW_NORMAL );
   // cv::imshow(layerName + "_original", mat);
-  
+
   // Normalize sdf to get a greyscale image
   cv::Mat normalized;
   cv::normalize(mat, normalized, 0, 1.0, cv::NORM_MINMAX);
   normalized.convertTo(normalized, CV_32F);
 
   // Add layer to elevation map
-  grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(normalized, layerName,
-                                                  gridMap, minDistance, maxDistance);
+  grid_map::GridMapCvConverter::addLayerFromImage<float, 1>(normalized, layerName, gridMap, minDistance, maxDistance);
 }
 
-} /* namespace */
+}  // namespace grid_map
 
 // Explicitly define the specialization for GridMap to have the filter implementation available for testing.
 template class grid_map::GeodesicFieldFilter<grid_map::GridMap>;
