@@ -155,8 +155,7 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
   if (mapFrame_ == "not_set") {
     // Set standard goal at the center
-    attractorPosition_.x() = mapOut.getSize()(0) / 2 * resolution;
-    attractorPosition_.y() = mapOut.getSize()(1) / 2 * resolution;
+    attractorPosition_ = mapOut.getPosition();
   }
 
   // Get frame of elevation map
@@ -186,13 +185,9 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
   // Preallocate output layer
   cv::Mat cvGeodesicDistance(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
   cv::Mat maskedGradientsX(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
-  ;
   cv::Mat maskedGradientsY(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
-  ;
   cv::Mat cvGradientsX(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
-  ;
   cv::Mat cvGradientsY(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
-  ;
   cv::Mat cvGradientsZ(cvObstacleSpaceMask.size(), cvObstacleSpaceMask.type(), cv::Scalar(0.0));
 
   // Add free and occupied space as layers
@@ -268,50 +263,151 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
 template <typename T>
 grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gridMap, const grid_map::Position& attractorPosition) {
-  // Preallocate output index
+
   grid_map::Index index;
+  grid_map::Position c = gridMap.getPosition();
+
+  if (gridMap.isInside(attractorPosition)) {
+    gridMap.getIndex(attractorPosition, index);
+    // Check if the attractor is in traversable space
+    if (gridMap.at(freeSpaceLayer_, index) > threshold_) {
+      return index;
+    } else {
+      // From attractor to center
+      for (grid_map::LineIterator iterator(gridMap, attractorPosition, c); !iterator.isPastEnd(); ++iterator) {
+        if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
+          grid_map::Index closestIndex = *iterator;
+          if (gridMap.at(freeSpaceLayer_, closestIndex) > threshold_) {
+            index = closestIndex;
+            break;
+          }
+        }
+      }
+      return index;
+    }
+  }
+
+  // Attractor is outside
 
   // Get closest attractor position
   Position closestAttractor = gridMap.getClosestPositionInMap(attractorPosition);
-
-  // Check if the attractor is in traversable areas
   gridMap.getIndex(closestAttractor, index);
 
-  // Sanity check
-  index.x() = std::min(index.x(), gridMap.getSize().x() - 1);
-  index.y() = std::min(index.y(), gridMap.getSize().y() - 1);
-  index.x() = std::max(index.x(), 0);
-  index.y() = std::max(index.y(), 0);
-  // std::cout << "Grid map length        : " << gridMap.getLength().transpose() << std::endl;
-  // std::cout << "Grid map size          : " << gridMap.getSize().transpose() << std::endl;
-  // std::cout << "Grid map resolution    : " << gridMap.getResolution() << std::endl;
-  // std::cout << "Closest Attractor      : " << closestAttractor.transpose() << std::endl;
-  // std::cout << "Closest Attractor index: " << index.transpose() << std::endl;
-
-  // ROS_WARN_STREAM("attractor closest index: " << index(0) << ", " << index(1));
-  bool traversable = gridMap.at(freeSpaceLayer_, index) > 0;
-  // ROS_WARN_STREAM("attractor traversable? " << traversable);
-
-  // If not traversable, we need to find a new candidate attractor
-  if (!traversable) {
-    double radius = gridMap.getSize()(0) * gridMap.getResolution();  // meters
-    // ROS_WARN_STREAM("attractor spiral radius: " << radius);
-
-    for (grid_map::SpiralIterator iterator(gridMap, closestAttractor, radius); !iterator.isPastEnd(); ++iterator) {
+  if (gridMap.at(freeSpaceLayer_, index) > threshold_) {
+    return index;
+  } else {
+    
+    // From attractor to center
+    for (grid_map::LineIterator iterator(gridMap, closestAttractor, c); !iterator.isPastEnd(); ++iterator) {
       if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
         grid_map::Index closestIndex = *iterator;
-        if (gridMap.at(freeSpaceLayer_, closestIndex) > 0) {
+        if (gridMap.at(freeSpaceLayer_, closestIndex) > threshold_) {
           index = closestIndex;
-          // ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
           break;
         }
       }
     }
+    return index;
   }
-  // ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
-  // cv::waitKey(10);
+    // const double halfLengthX = gridMap.getLength().x() * 0.5;
+    // const double halfLengthY = gridMap.getLength().y() * 0.5;
 
-  return index;
+    // // Get direction
+    // grid_map::Position c = gridMap.getPosition();
+    // grid_map::Position n = attractorPosition - c;
+    // double angle = std::atan2(n.y(), n.x());
+
+    // grid_map::Position inter;
+    // if (std::abs(angle) < M_PI_2) {
+    //   // top
+    //   inter.x() = halfLengthX;
+    //   inter.y() = n.y() / n.x() * (inter.x() - c.x()) + c.y();
+
+    // } else if (angle >= M_PI_2 && angle < 3 * M_PI_2) {
+    //   // left
+    //   inter.y() = halfLengthY;
+    //   inter.x() = n.x() / n.y() * (inter.y() - c.y()) + c.x();
+
+    // } else if (angle >= 3 * M_PI_2 && angle < -3 * M_PI_2) {
+    //   // bottom
+    //   inter.x() = -halfLengthX;
+    //   inter.y() = n.y() / n.x() * (inter.x() - c.x()) + c.y();
+
+    // } else if (angle >= 3 * M_PI_2 && angle < -3 * M_PI_2) {
+    //   // right
+    //   inter.y() = -halfLengthY;
+    //   inter.x() = n.x() / n.y() * (inter.y() - c.y()) + c.x();
+    // }
+
+    // std::cout << "Grid map length        : " << gridMap.getLength().transpose() << std::endl;
+    // std::cout << "Grid map size          : " << gridMap.getSize().transpose() << std::endl;
+    // std::cout << "Grid map resolution    : " << gridMap.getResolution() << std::endl;
+    // std::cout << "Center                 : " << c.transpose() << std::endl;
+    // std::cout << "Attractor              : " << attractorPosition.transpose() << std::endl;
+    // std::cout << "Intersection           : " << inter.transpose() << std::endl;
+
+    // From center to attractor
+    // for (grid_map::LineIterator iterator(gridMap, c, inter); !iterator.isPastEnd(); ++iterator) {
+    //   if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
+    //     grid_map::Index closestIndex = *iterator;
+    //     if (gridMap.at(freeSpaceLayer_, closestIndex) < threshold_) {
+    //       break;
+    //     } else {
+    //       index = closestIndex;
+    //     }
+    //   }
+    // }
+
+    // // From attractor to center
+    // for (grid_map::LineIterator iterator(gridMap, inter, c); !iterator.isPastEnd(); ++iterator) {
+    //   if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
+    //     grid_map::Index closestIndex = *iterator;
+    //     if (gridMap.at(freeSpaceLayer_, closestIndex) > threshold_) {
+    //       index = closestIndex;
+    //       break;
+    //     }
+    //   }
+    // }
+
+    // // Get closest attractor position
+    // Position closestAttractor = gridMap.getClosestPositionInMap(attractorPosition);
+
+    // // Check if the attractor is in traversable areas
+    // gridMap.getIndex(closestAttractor, index);
+
+    // // Sanity check
+    // index.x() = std::min(index.x(), gridMap.getSize().x() - 1);
+    // index.y() = std::min(index.y(), gridMap.getSize().y() - 1);
+    // index.x() = std::max(index.x(), 0);
+    // index.y() = std::max(index.y(), 0);
+    // // std::cout << "Grid map length        : " << gridMap.getLength().transpose() << std::endl;
+    // // std::cout << "Grid map size          : " << gridMap.getSize().transpose() << std::endl;
+    // // std::cout << "Grid map resolution    : " << gridMap.getResolution() << std::endl;
+    // // std::cout << "Closest Attractor      : " << closestAttractor.transpose() << std::endl;
+    // // std::cout << "Closest Attractor index: " << index.transpose() << std::endl;
+
+    // // ROS_WARN_STREAM("attractor closest index: " << index(0) << ", " << index(1));
+    // bool traversable = gridMap.at(freeSpaceLayer_, index) > 0;
+    // // ROS_WARN_STREAM("attractor traversable? " << traversable);
+
+    // // If not traversable, we need to find a new candidate attractor
+    // if (!traversable) {
+    //   double radius = gridMap.getSize()(0) * gridMap.getResolution();  // meters
+    //   // ROS_WARN_STREAM("attractor spiral radius: " << radius);
+
+    //   for (grid_map::SpiralIterator iterator(gridMap, closestAttractor, radius); !iterator.isPastEnd(); ++iterator) {
+    //     if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
+    //       grid_map::Index closestIndex = *iterator;
+    //       if (gridMap.at(freeSpaceLayer_, closestIndex) > 0) {
+    //         index = closestIndex;
+    //         // ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
+    //         break;
+    //       }
+    //     }
+    //   }
+    // }
+    // // ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
+    // // cv::waitKey(10);
 }
 
 template <typename T>

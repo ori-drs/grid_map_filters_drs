@@ -1,13 +1,11 @@
 <launch>
-  <!-- Launch the grid map filters demo node. -->
-  <node pkg="grid_map_demos" type="filters_demo" name="grid_map_filter_demo" output="screen">
-    <!-- Input topic -->
-  	<param name="input_topic" value="/image_to_gridmap_demo/grid_map" />
-  	<!-- Output topic -->
-  	<param name="output_topic" value="filtered_map" />
-  	<!-- Load grid map filter chain configuration -->
-    <rosparam command="load" file="$(find grid_map_filters_drs)/config/filter_chain_example.yaml" />
-  </node>
+  <include file="$(find grid_map_filters_drs)/launch/filter_chain.launch">
+    <arg name="input_topic"           value="/image_to_gridmap_demo/grid_map"/>
+    <arg name="output_topic"          value="/grid_map_filter_demo/filtered_map"/>
+    <arg name="viz"                   value="true"/>
+    <arg name="filter_chain_config"   value="$(find grid_map_filters_drs)/config/filter_chain_example.yaml"/>
+    <arg name="viz_config"            value="$(find grid_map_filters_drs)/config/visualizations_example.yaml"/>
+  </include>
 
   <!-- Load the general parameters (except for filter chain) for this demo. -->
   <rosparam command="load" file="$(find grid_map_demos)/config/filters_demo.yaml" />
@@ -28,7 +26,7 @@
   </node>
 
   <!-- Publish attractor -->
-  <node pkg="rostopic" type="rostopic" name="attractor_pub" args="pub /initialpose geometry_msgs/PoseWithCovarianceStamped '{ header: { frame_id: map }, pose: {pose: {position: { x: 4.0 , y: 0.6 }}}}' "/>
+  <node pkg="rostopic" type="rostopic" name="attractor_pub" args="pub /initialpose geometry_msgs/PoseWithCovarianceStamped '{ header: { frame_id: map }, pose: {pose: {position: { x: 4.0 , y: 0.6 }}}}'" output="screen"/>
 
   <!-- Publish base frame -->
   <node pkg="tf" type="static_transform_publisher" name="base_frame_pub" args="0.0 0.0 0.4 0 0 0 1 map base 1"/>
@@ -36,8 +34,6 @@
   <!-- Grid map demos -->
   <node pkg="grid_map_demos" type="image_to_gridmap_demo" name="image_to_gridmap_demo" output="screen" />
 
-  <!-- Launch the grid map visualizer. -->
-  <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen" />
 
   <!-- Launch RViz with the demo configuration. -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find grid_map_filters_drs)/config/rviz/demo.rviz" />
