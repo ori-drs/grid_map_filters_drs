@@ -99,7 +99,7 @@ Visualization Manager:
       Enabled: false
       Grid Cell Decimation: 1
       Grid Line Thickness: 0.10000000149011612
-      Height Layer: elevation
+      Height Layer: elevation_inpainted
       Height Transformer: GridMapLayer
       History Length: 1
       Invert ColorMap: true
@@ -147,7 +147,7 @@ Visualization Manager:
       Enabled: false
       Grid Cell Decimation: 1
       Grid Line Thickness: 0.10000000149011612
-      Height Layer: elevation
+      Height Layer: elevation_inpainted
       Height Transformer: GridMapLayer
       History Length: 1
       Invert ColorMap: true
@@ -161,6 +161,37 @@ Visualization Manager:
       Unreliable: false
       Use ColorMap: true
       Value: false
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz/PoseWithCovariance
+      Color: 255; 25; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Head Length: 0.20000000298023224
+      Head Radius: 0.20000000298023224
+      Name: Geodesic Attractor
+      Queue Size: 10
+      Shaft Length: 0.30000001192092896
+      Shaft Radius: 0.10000000149011612
+      Shape: Arrow
+      Topic: /initialpose
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -189,7 +220,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 18.112367630004883
+      Distance: 16.845294952392578
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -197,9 +228,9 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.7208231687545776
-        Y: 0.8258696794509888
-        Z: -3.123840093612671
+        X: -0.5068857669830322
+        Y: 0.17590656876564026
+        Z: -2.820725440979004
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

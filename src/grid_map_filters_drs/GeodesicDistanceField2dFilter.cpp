@@ -263,151 +263,57 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
 template <typename T>
 grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gridMap, const grid_map::Position& attractorPosition) {
+  Position attractor = attractorPosition;
 
-  grid_map::Index index;
-  grid_map::Position c = gridMap.getPosition();
+  grid_map::Index attractorIdx;
+  grid_map::Index centerIdx;
 
-  if (gridMap.isInside(attractorPosition)) {
-    gridMap.getIndex(attractorPosition, index);
-    // Check if the attractor is in traversable space
-    if (gridMap.at(freeSpaceLayer_, index) > threshold_) {
-      return index;
-    } else {
-      // From attractor to center
-      for (grid_map::LineIterator iterator(gridMap, attractorPosition, c); !iterator.isPastEnd(); ++iterator) {
-        if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
-          grid_map::Index closestIndex = *iterator;
-          if (gridMap.at(freeSpaceLayer_, closestIndex) > threshold_) {
-            index = closestIndex;
-            break;
-          }
-        }
-      }
-      return index;
-    }
+  gridMap.getIndex(gridMap.getPosition(), centerIdx);
+  gridMap.getIndex(attractor, attractorIdx);
+
+  // Check if the attractor is outside the map to snap it to the edge
+  if (!gridMap.isInside(attractor)) {
+    // Get closest points
+    attractor = gridMap.getClosestPositionInMap(attractor);
+    // Get index
+    gridMap.getIndex(attractor, attractorIdx);
+    // Enforce the index to be valid
+    attractorIdx.x() = std::max(std::min(attractorIdx.x(), gridMap.getSize().x() - 1), 0);
+    attractorIdx.y() = std::max(std::min(attractorIdx.y(), gridMap.getSize().y() - 1), 0);
   }
 
-  // Attractor is outside
+  // Check if the point is in untraversable areas, so we look for the closest traversable point
+  if (gridMap.at(freeSpaceLayer_, attractorIdx) == 0) {
+    // // Project a line from the attractor to the center to find the next traversable point
+    // const size_t maxCount = 5;
+    // size_t count = 0;
+    // for (grid_map::LineIterator iterator(gridMap, attractorIdx, centerIdx); !iterator.isPastEnd(); ++iterator) {
+    //   if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
 
-  // Get closest attractor position
-  Position closestAttractor = gridMap.getClosestPositionInMap(attractorPosition);
-  gridMap.getIndex(closestAttractor, index);
-
-  if (gridMap.at(freeSpaceLayer_, index) > threshold_) {
-    return index;
-  } else {
+    //     grid_map::Index idx = *iterator;
+    //     if (gridMap.at(freeSpaceLayer_, idx) > 0) {
+    //       count++;
+    //     }
+    //     if (count > maxCount){
+    //       attractorIdx = idx;
+    //       break;
+    //     }
+    //   }
+    // }
     
-    // From attractor to center
-    for (grid_map::LineIterator iterator(gridMap, closestAttractor, c); !iterator.isPastEnd(); ++iterator) {
+    double distanceToCenter = (gridMap.getPosition() - attractor).norm();
+    for (grid_map::SpiralIterator iterator(gridMap, attractor, distanceToCenter); !iterator.isPastEnd(); ++iterator) {
       if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
-        grid_map::Index closestIndex = *iterator;
-        if (gridMap.at(freeSpaceLayer_, closestIndex) > threshold_) {
-          index = closestIndex;
+        grid_map::Index idx = *iterator;
+        if (gridMap.at(freeSpaceLayer_, idx) > 0) {
+          attractorIdx = idx;
+          // ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
           break;
         }
       }
     }
-    return index;
   }
-    // const double halfLengthX = gridMap.getLength().x() * 0.5;
-    // const double halfLengthY = gridMap.getLength().y() * 0.5;
-
-    // // Get direction
-    // grid_map::Position c = gridMap.getPosition();
-    // grid_map::Position n = attractorPosition - c;
-    // double angle = std::atan2(n.y(), n.x());
-
-    // grid_map::Position inter;
-    // if (std::abs(angle) < M_PI_2) {
-    //   // top
-    //   inter.x() = halfLengthX;
-    //   inter.y() = n.y() / n.x() * (inter.x() - c.x()) + c.y();
-
-    // } else if (angle >= M_PI_2 && angle < 3 * M_PI_2) {
-    //   // left
-    //   inter.y() = halfLengthY;
-    //   inter.x() = n.x() / n.y() * (inter.y() - c.y()) + c.x();
-
-    // } else if (angle >= 3 * M_PI_2 && angle < -3 * M_PI_2) {
-    //   // bottom
-    //   inter.x() = -halfLengthX;
-    //   inter.y() = n.y() / n.x() * (inter.x() - c.x()) + c.y();
-
-    // } else if (angle >= 3 * M_PI_2 && angle < -3 * M_PI_2) {
-    //   // right
-    //   inter.y() = -halfLengthY;
-    //   inter.x() = n.x() / n.y() * (inter.y() - c.y()) + c.x();
-    // }
-
-    // std::cout << "Grid map length        : " << gridMap.getLength().transpose() << std::endl;
-    // std::cout << "Grid map size          : " << gridMap.getSize().transpose() << std::endl;
-    // std::cout << "Grid map resolution    : " << gridMap.getResolution() << std::endl;
-    // std::cout << "Center                 : " << c.transpose() << std::endl;
-    // std::cout << "Attractor              : " << attractorPosition.transpose() << std::endl;
-    // std::cout << "Intersection           : " << inter.transpose() << std::endl;
-
-    // From center to attractor
-    // for (grid_map::LineIterator iterator(gridMap, c, inter); !iterator.isPastEnd(); ++iterator) {
-    //   if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
-    //     grid_map::Index closestIndex = *iterator;
-    //     if (gridMap.at(freeSpaceLayer_, closestIndex) < threshold_) {
-    //       break;
-    //     } else {
-    //       index = closestIndex;
-    //     }
-    //   }
-    // }
-
-    // // From attractor to center
-    // for (grid_map::LineIterator iterator(gridMap, inter, c); !iterator.isPastEnd(); ++iterator) {
-    //   if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
-    //     grid_map::Index closestIndex = *iterator;
-    //     if (gridMap.at(freeSpaceLayer_, closestIndex) > threshold_) {
-    //       index = closestIndex;
-    //       break;
-    //     }
-    //   }
-    // }
-
-    // // Get closest attractor position
-    // Position closestAttractor = gridMap.getClosestPositionInMap(attractorPosition);
-
-    // // Check if the attractor is in traversable areas
-    // gridMap.getIndex(closestAttractor, index);
-
-    // // Sanity check
-    // index.x() = std::min(index.x(), gridMap.getSize().x() - 1);
-    // index.y() = std::min(index.y(), gridMap.getSize().y() - 1);
-    // index.x() = std::max(index.x(), 0);
-    // index.y() = std::max(index.y(), 0);
-    // // std::cout << "Grid map length        : " << gridMap.getLength().transpose() << std::endl;
-    // // std::cout << "Grid map size          : " << gridMap.getSize().transpose() << std::endl;
-    // // std::cout << "Grid map resolution    : " << gridMap.getResolution() << std::endl;
-    // // std::cout << "Closest Attractor      : " << closestAttractor.transpose() << std::endl;
-    // // std::cout << "Closest Attractor index: " << index.transpose() << std::endl;
-
-    // // ROS_WARN_STREAM("attractor closest index: " << index(0) << ", " << index(1));
-    // bool traversable = gridMap.at(freeSpaceLayer_, index) > 0;
-    // // ROS_WARN_STREAM("attractor traversable? " << traversable);
-
-    // // If not traversable, we need to find a new candidate attractor
-    // if (!traversable) {
-    //   double radius = gridMap.getSize()(0) * gridMap.getResolution();  // meters
-    //   // ROS_WARN_STREAM("attractor spiral radius: " << radius);
-
-    //   for (grid_map::SpiralIterator iterator(gridMap, closestAttractor, radius); !iterator.isPastEnd(); ++iterator) {
-    //     if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
-    //       grid_map::Index closestIndex = *iterator;
-    //       if (gridMap.at(freeSpaceLayer_, closestIndex) > 0) {
-    //         index = closestIndex;
-    //         // ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
-    //         break;
-    //       }
-    //     }
-    //   }
-    // }
-    // // ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
-    // // cv::waitKey(10);
+  return attractorIdx;
 }
 
 template <typename T>
