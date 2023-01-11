@@ -125,6 +125,10 @@ add_executable(grid_map_filter_drs_node   src/elevation_map_filter/elevation_map
                                           ${UTILS_SRC})
 target_link_libraries(grid_map_filter_drs_node  ${catkin_LIBRARIES}
                                                 ${OpenCV_LIBS})
+                                                
+add_executable(grid_map_erosion_node   src/elevation_map_filter/GridMapFilter.cpp)
+target_link_libraries(grid_map_erosion_node  ${catkin_LIBRARIES}
+                                                ${OpenCV_LIBS})
 
 
 #############
