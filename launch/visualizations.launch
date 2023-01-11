@@ -1,0 +1,14 @@
+<launch>
+  <arg name="suffix"       default=""/>
+  <arg name="input_topic"  default="/elevation_mapping/elevation_map_raw_filtered"/>
+ 
+  <arg name="viz_config" default="$(find grid_map_filters_drs)/config/visualizations_example.yaml"/>
+
+  <!-- Launch the grid map visualizer. -->
+  <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
+    <param name="grid_map_topic" value="$(arg input_topic)" />
+
+    <rosparam command="load" file="$(arg viz_config)" />
+  </node>
+
+</launch>

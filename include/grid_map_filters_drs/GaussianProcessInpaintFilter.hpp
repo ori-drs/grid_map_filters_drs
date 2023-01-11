@@ -4,14 +4,13 @@
  *  Author: Matias Mattamala
  */
 
-
 #pragma once
 
 #include <filters/filter_base.hpp>
 #include <grid_map_filters_drs/utils/profiler.hpp>
+#include <limbo/limbo.hpp>
 #include <string>
 #include <vector>
-#include <limbo/limbo.hpp>
 
 using namespace limbo;
 
@@ -20,9 +19,8 @@ namespace grid_map {
 /*!
  * Sets nan values to fixed value
  */
-template<typename T>
-class GaussianProcessInpaintFilter : public filters::FilterBase<T>
-{
+template <typename T>
+class GaussianProcessInpaintFilter : public filters::FilterBase<T> {
   // Default kernel
   // Squared exponential
   struct Params {
@@ -50,8 +48,7 @@ class GaussianProcessInpaintFilter : public filters::FilterBase<T>
       /// @ingroup kernel_defaults
       BO_PARAM(double, l, 10);
     };
-    struct opt_rprop : public defaults::opt_rprop {
-    };
+    struct opt_rprop : public defaults::opt_rprop {};
     // struct opt_nloptgrad : public defaults::opt_nloptgrad {
     // };
   };
@@ -81,7 +78,6 @@ class GaussianProcessInpaintFilter : public filters::FilterBase<T>
   virtual bool update(const T& mapIn, T& mapOut);
 
  private:
-
   //! Layer the threshold will be evaluated.
   std::string inputLayer_;
 
@@ -98,4 +94,4 @@ class GaussianProcessInpaintFilter : public filters::FilterBase<T>
   std::shared_ptr<Profiler> profiler_ptr_;
 };
 
-} /* namespace */
+}  // namespace grid_map

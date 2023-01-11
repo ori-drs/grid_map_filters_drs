@@ -2,22 +2,17 @@
  *  Based on
  *  FiltersDemo.cpp
  *  by Peter Fankhauser (ETH Zurich, ANYbotics)
- * 
+ *
  *  Author: Matias Mattamala
  */
-
 
 #include <elevation_map_filter/elevation_map_filter.hpp>
 
 using namespace grid_map;
 
-ElevationMapFilter::ElevationMapFilter(ros::NodeHandle &nodeHandle, bool &success)
-    : nodeHandle_(nodeHandle),
-      elevationMapAvailable_(false),
-      filterChain_("grid_map::GridMap")
-{
-  if (!readParameters())
-  {
+ElevationMapFilter::ElevationMapFilter(ros::NodeHandle& nodeHandle, bool& success)
+    : nodeHandle_(nodeHandle), elevationMapAvailable_(false), filterChain_("grid_map::GridMap") {
+  if (!readParameters()) {
     success = false;
     return;
   }
@@ -27,13 +22,12 @@ ElevationMapFilter::ElevationMapFilter(ros::NodeHandle &nodeHandle, bool &succes
   // Setup publisher
   publisher_ = nodeHandle_.advertise<grid_map_msgs::GridMap>(outputTopic_, 100);
   // Setup service server
-  serverForceUpdate_   = nodeHandle_.advertiseService("force_update", &ElevationMapFilter::serviceCallback, this);
+  serverForceUpdate_ = nodeHandle_.advertiseService("force_update", &ElevationMapFilter::serviceCallback, this);
   // Initialize latency callback
   latencyTic_ = std::chrono::high_resolution_clock::now();
 
   // Setup filter chain.
-  if (!filterChain_.configure(filterChainParametersName_, nodeHandle))
-  {
+  if (!filterChain_.configure(filterChainParametersName_, nodeHandle)) {
     ROS_ERROR("Could not configure the filter chain!");
     success = false;
     return;
@@ -42,18 +36,13 @@ ElevationMapFilter::ElevationMapFilter(ros::NodeHandle &nodeHandle, bool &succes
   // Setup profiler
   profiler_ptr_ = std::make_shared<Profiler>("ElevationMapFilter");
 
-
   success = true;
 }
 
-ElevationMapFilter::~ElevationMapFilter()
-{
-}
+ElevationMapFilter::~ElevationMapFilter() {}
 
-bool ElevationMapFilter::readParameters()
-{
-  if (!nodeHandle_.getParam("input_topic", inputTopic_))
-  {
+bool ElevationMapFilter::readParameters() {
+  if (!nodeHandle_.getParam("input_topic", inputTopic_)) {
     ROS_ERROR("Could not read parameter `input_topic`.");
     return false;
   }
@@ -62,14 +51,12 @@ bool ElevationMapFilter::readParameters()
   return true;
 }
 
-void ElevationMapFilter::applyFilterChain(grid_map::GridMap& inputMap)
-{
+void ElevationMapFilter::applyFilterChain(grid_map::GridMap& inputMap) {
   grid_map::GridMap outputMap;
 
   // auto tic = std::chrono::high_resolution_clock::now();
   profiler_ptr_->startEvent("0.update");
-  if (!filterChain_.update(inputMap, outputMap))
-  {
+  if (!filterChain_.update(inputMap, outputMap)) {
     ROS_ERROR("[Filter chain] Could not update the grid map filter chain!");
     return;
   }
@@ -79,7 +66,7 @@ void ElevationMapFilter::applyFilterChain(grid_map::GridMap& inputMap)
   // Timing
   profiler_ptr_->endEvent("0.update");
   ROS_DEBUG_STREAM(profiler_ptr_->getReport());
-  
+
   // auto toc = std::chrono::high_resolution_clock::now();
   // std::chrono::duration<double> elapsedTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(toc - tic);
   // ROS_DEBUG_STREAM("[Filter chain] Time required to apply filter chain: " << elapsedTime.count() << " ms");
@@ -90,8 +77,7 @@ void ElevationMapFilter::applyFilterChain(grid_map::GridMap& inputMap)
   publisher_.publish(outputMessage);
 }
 
-void ElevationMapFilter::callback(const grid_map_msgs::GridMap &message)
-{
+void ElevationMapFilter::callback(const grid_map_msgs::GridMap& message) {
   auto tic = std::chrono::high_resolution_clock::now();
 
   std::chrono::duration<double> callbackTime = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(tic - latencyTic_);
@@ -102,7 +88,7 @@ void ElevationMapFilter::callback(const grid_map_msgs::GridMap &message)
 
   // Elevation map available
   elevationMapAvailable_ = true;
-  
+
   // Apply filter chain.
   applyFilterChain(inputMap_);
 
@@ -113,9 +99,8 @@ void ElevationMapFilter::callback(const grid_map_msgs::GridMap &message)
   latencyTic_ = std::chrono::high_resolution_clock::now();
 }
 
-bool ElevationMapFilter::serviceCallback(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
-{
-  if(elevationMapAvailable_) {
+bool ElevationMapFilter::serviceCallback(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response) {
+  if (elevationMapAvailable_) {
     auto tic = std::chrono::high_resolution_clock::now();
     ROS_DEBUG_STREAM("[Filter chain] Triggering filter chain with service");
     applyFilterChain(inputMap_);
@@ -130,5 +115,4 @@ bool ElevationMapFilter::serviceCallback(std_srvs::Trigger::Request &request, st
   }
 
   return false;
-
 }
