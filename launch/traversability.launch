@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="suffix"                default=""/>
+  <arg name="visualizations"        default="false"/>
+  <arg name="input_topic"           default="/elevation_mapping/elevation_map_raw"/>
+  <arg name="output_topic"          default="/elevation_mapping/elevation_map_filtered"/>
+  <arg name="filter_chain_config"   default="$(find grid_map_filters_drs)/config/height_traversability.yaml"/>
+  <arg name="visualizations_config" default="$(find grid_map_filters_drs)/config/visualizations_example.yaml"/>
+  <arg name="debug"                 default="false"/>
+  <arg unless="$(arg debug)"        name="launch_prefix" value="" />
+  <arg     if="$(arg debug)"        name="launch_prefix" value="gdb -ex run --args" />
+
+  <!-- Elevation map filter node. -->
+  <node pkg="grid_map_filters_drs" type="grid_map_filter_drs_node" name="elevation_map_filter$(arg suffix)" output="screen" launch-prefix="$(arg launch_prefix)">
+    <!-- Input topic -->
+    <param name="input_topic" value="$(arg input_topic)" />
+    <!-- Output topic -->
+    <param name="output_topic" value="$(arg output_topic)" />
+
+    <!-- Load grid map filter chain configuration -->
+    <rosparam command="load" file="$(arg filter_chain_config)" />
+  </node>
+
+  <!-- Launch the grid map visualizer. -->
+  <node if="$(arg visualizations)" pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
+    <!-- Input topic -->
+    <param name="grid_map_topic" value="$(arg output_topic)" />
+
+    <!-- Load visualizations configuration -->
+    <rosparam command="load" file="$(arg visualizations_config)" />
+  </node>
+
+</launch>
