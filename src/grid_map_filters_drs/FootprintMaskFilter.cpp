@@ -84,7 +84,7 @@ bool FootprintMaskFilter<T>::update(const T& mapIn, T& mapOut) {
   mapFrame_ = mapOut.getFrameId();
 
   // Add filtered layer
-  mapOut.add(outputLayer_);
+  mapOut.add(outputLayer_, 0.0);
 
   // Get transformation
   Eigen::Isometry3d T_map_footprint = Eigen::Isometry3d::Identity();
