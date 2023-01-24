@@ -32,6 +32,24 @@ Toolbars:
 Visualization Manager:
   Class: ""
   Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
     - Alpha: 1
       Class: rviz/Axes
       Enabled: false
@@ -72,7 +90,7 @@ Visualization Manager:
       Color Layer: sdf
       Color Transformer: GridMapLayer
       ColorMap: turbo
-      Enabled: true
+      Enabled: false
       Grid Cell Decimation: 1
       Grid Line Thickness: 0.10000000149011612
       Height Layer: elevation
@@ -88,7 +106,7 @@ Visualization Manager:
       Topic: /grid_map_filter_demo/filtered_map
       Unreliable: false
       Use ColorMap: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Class: grid_map_rviz_plugin/GridMap
@@ -144,7 +162,7 @@ Visualization Manager:
       Color Layer: geodesic
       Color Transformer: GridMapLayer
       ColorMap: plasma
-      Enabled: false
+      Enabled: true
       Grid Cell Decimation: 1
       Grid Line Thickness: 0.10000000149011612
       Height Layer: elevation_inpainted
@@ -160,7 +178,31 @@ Visualization Manager:
       Topic: /grid_map_filter_demo/filtered_map
       Unreliable: false
       Use ColorMap: true
-      Value: false
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Class: grid_map_rviz_plugin/GridMap
+      Color: 200; 200; 200
+      Color Layer: footprint_mask
+      Color Transformer: ""
+      ColorMap: coolwarm
+      Enabled: true
+      Grid Cell Decimation: 1
+      Grid Line Thickness: 0.10000000149011612
+      Height Layer: elevation
+      Height Transformer: GridMapLayer
+      History Length: 1
+      Invert ColorMap: true
+      Max Color: 255; 255; 255
+      Max Intensity: 10
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: FootprintMask
+      Show Grid Lines: true
+      Topic: /grid_map_filter_demo/filtered_map
+      Unreliable: false
+      Use ColorMap: true
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
@@ -192,9 +234,30 @@ Visualization Manager:
       Topic: /initialpose
       Unreliable: false
       Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        base:
+          Value: true
+        map:
+          Value: true
+      Marker Alpha: 1
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        map:
+          base:
+            {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
-    Background Color: 255; 255; 255
+    Background Color: 46; 52; 54
     Default Light: true
     Fixed Frame: map
     Frame Rate: 30
@@ -220,7 +283,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 16.845294952392578
+      Distance: 15.777355194091797
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -228,17 +291,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.5068857669830322
-        Y: 0.17590656876564026
-        Z: -2.820725440979004
+        X: -0.6939989924430847
+        Y: 0.334102988243103
+        Z: -2.828695058822632
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8997969627380371
+      Pitch: 0.7947970628738403
       Target Frame: <Fixed Frame>
-      Yaw: 0.9099376201629639
+      Yaw: 0.9049376249313354
     Saved: ~
 Window Geometry:
   Displays:

@@ -30,6 +30,12 @@
       </description>
     </class>
 
+    <class name="gridMapFiltersDrs/FootprintMaskFilter" type="grid_map::FootprintMaskFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Obtains a mask around the footprint of a frame given a size
+      </description>
+    </class>
+
     <class name="gridMapFiltersDrs/GaussianProcessInpaintFilter" type="grid_map::GaussianProcessInpaintFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
       <description>
         Uses Gaussian Process regression to inpaint the map
