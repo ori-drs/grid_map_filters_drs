@@ -1,0 +1,35 @@
+grid_map_filters:
+
+  - name: buffer_normalizer
+    type: gridMapFilters/BufferNormalizerFilter
+
+  # Inpainting
+  - name: inpainting
+    type: gridMapCv/InpaintFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_inpainted_original
+      radius: 0.1 # in m
+  
+  # Inpainting
+  - name: denoise_inpaint
+    type: gridMapFiltersDrs/DenoiseAndInpaintFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_inpainted
+      radius: 0.1 # in m
+      inpainting_type: ns # 'ns' or 'telea' allowed
+      pre_denoising: true # enables denoising before inpainting
+      denoising_radius: 0.15 # m
+      denoising_type: total_variation # 'total_variation', 'non_local', 'gaussian', and 'median' supported
+
+  # traversability height filter
+  - name: height_filter
+    type: gridMapFiltersDrs/BaseHeightThresholdFilter
+    params:
+      input_layer: elevation_inpainted
+      output_layer: height_traversability
+      target_frame: base
+      threshold: -0.3
+      set_to_upper: 0.0
+      set_to_lower: 1.0

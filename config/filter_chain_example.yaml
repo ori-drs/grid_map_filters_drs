@@ -123,9 +123,21 @@ grid_map_filters:
   - name: traversability
     type: gridMapFilters/MathExpressionFilter
     params:
-      output_layer: traversability_geometric
-      expression: (0.5 * (1.0 - (slope / 0.6)) + 0.5 * height_traversability) .* (1.0 - unknown_space)
-         
+      output_layer: traversability
+      expression: (1.0 - (slope / 0.6))
+      # expression: (0.5 * (1.0 - (slope / 0.6)) + 0.5 * height_traversability) .* (1.0 - unknown_space)
+      
+  - name: math_traversability
+    type: gridMapFilters/SlidingWindowMathExpressionFilter
+    params:
+      input_layer: traversability
+      output_layer: traversability_dilated
+      expression: minOfFinites(traversability)
+      compute_empty_cells: false
+      edge_handling: crop # options: inside, crop, empty, mean
+      window_size: 5 # in number of cells (optional, default: 3), make sure to make this compatible with the kernel matrix
+    # window_length: 0.05 # instead of window_size, in m
+       
   # Compute 2D Signed Distance Field
   - name: sdf
     type: gridMapFiltersDrs/SignedDistanceField2dFilter
@@ -159,6 +171,7 @@ grid_map_filters:
       output_layer: geodesic_field
       normalize_gradients: true
       attractor_topic: /initialpose
+      field_smoothing_radius: 0.5
   
   - name: footprint_mask
     type: gridMapFiltersDrs/FootprintMaskFilter
@@ -169,4 +182,3 @@ grid_map_filters:
       length: 0.3
       width: 0.4
       clearance: 0.0
-
