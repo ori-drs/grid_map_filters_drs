@@ -72,6 +72,21 @@ In contrast to the normals computation method available in the `grid_map` packag
     normals_smoothing_radius: 0.1 # spatial median filter (in meters)
 ```
 
+### Footprint mask
+It returns a mask that represents the footprint of a robot in a given frame `footprint_frame` (obtained from `tf`). It accepts types `rectangle` or `circle`: for the former, it will use the `length` (x axis) and `width` (y axis) provided to make the rectangle; for the latter, it will use half diagonal as the radius. Additionally it accepts a `clearance` parameter.
+
+```yaml
+- name: footprint_mask
+  type: gridMapFiltersDrs/FootprintMaskFilter
+  params:
+    output_layer: footprint_mask
+    footprint_frame: base
+    type: rectangle
+    length: 1.0
+    width: 0.5
+    clearance: 0.1
+```
+
 ### Gaussian Process Inpaint
 This filter uses a subsample of the map to apply a Gaussian Process regression, generating a super smooth surface. **It depends on the [limbo library](https://github.com/ori-drs/limbo)**.
 

@@ -172,3 +172,13 @@ grid_map_filters:
       normalize_gradients: true
       attractor_topic: /initialpose
       field_smoothing_radius: 0.5
+  
+  - name: footprint_mask
+    type: gridMapFiltersDrs/FootprintMaskFilter
+    params:
+      output_layer: footprint_mask
+      footprint_frame: base
+      type: rectangle
+      length: 0.3
+      width: 0.4
+      clearance: 0.0
