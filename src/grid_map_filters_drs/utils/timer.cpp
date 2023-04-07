@@ -17,6 +17,8 @@ std::string Timer::getReadableUnits() const {
       return "us";
     case Timer::Units::no_preference:
       return "not specified";
+    default:
+      return "not specified";
   }
 }
 
@@ -45,6 +47,8 @@ double Timer::elapsed(Timer::Units units) const {
     case Timer::Units::microsecs:
       return std::chrono::duration_cast<Microsecs>(dt).count();
     case Timer::Units::no_preference:
+      throw std::runtime_error("Timer::elapsed cannot handle 'no_preference'");
+    default:
       throw std::runtime_error("Timer::elapsed cannot handle 'no_preference'");
   }
 }
