@@ -3,4 +3,4 @@ grid_map_filters:
   - name: delete
     type: gridMapFiltersDrs/DeleteAllButFilter
     params:
-      layers: [elevation_inpainted, traversability_geometric, traversability_learned, geodesic, geodesic_field, sdf] # List of layers.
+      layers: [elevation_inpainted, traversability, traversability_geometric, traversability_learned, geodesic, geodesic_field, sdf] # List of layers.

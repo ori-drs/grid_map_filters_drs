@@ -8,7 +8,7 @@
   </include>
 
   <!-- Load the general parameters (except for filter chain) for this demo. -->
-  <rosparam command="load" file="$(find grid_map_demos)/config/filters_demo.yaml" />
+  <rosparam command="load" file="$(find grid_map_filters_drs)/config/filters_demo.yaml" />
 
   <!-- Publish base frame -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_frame_pub" args="0.0 0.0 0.4 0.0 0.0 0.258819 0.9659258 map base"/>

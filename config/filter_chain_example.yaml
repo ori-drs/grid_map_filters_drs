@@ -123,14 +123,14 @@ grid_map_filters:
   - name: traversability
     type: gridMapFilters/MathExpressionFilter
     params:
-      output_layer: traversability_geometric
+      output_layer: traversability
       expression: (0.5 * (1.0 - (slope / 0.6)) + 0.5 * height_traversability) .* (1.0 - unknown_space)
          
   # Compute 2D Signed Distance Field
   - name: sdf
     type: gridMapFiltersDrs/SignedDistanceField2dFilter
     params:
-      input_layer: traversability_geometric
+      input_layer: traversability
       output_layer: sdf
       normalize_gradients: true
       threshold: 0.2
@@ -138,7 +138,7 @@ grid_map_filters:
   - name: geodesic
     type: gridMapFiltersDrs/GeodesicDistanceField2dFilter
     params:
-      input_layer: traversability_geometric
+      input_layer: traversability
       output_layer: geodesic
       normalize_gradients: true
       attractor_topic: /initialpose
@@ -155,7 +155,7 @@ grid_map_filters:
   - name: geodesic_field
     type: gridMapFiltersDrs/GeodesicFieldFilter
     params:
-      input_layer: traversability_geometric
+      input_layer: traversability
       output_layer: geodesic_field
       normalize_gradients: true
       attractor_topic: /initialpose

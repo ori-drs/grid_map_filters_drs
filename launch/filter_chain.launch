@@ -24,7 +24,7 @@
   <node if="$(arg viz)" pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
     <param name="grid_map_topic" value="$(arg output_topic)" />
     
-    <rosparam command="load" file="$(arg viz_config)" />
+    <rosparam command="load" file="$(arg viz_config)"/>
   </node>
 
 </launch>

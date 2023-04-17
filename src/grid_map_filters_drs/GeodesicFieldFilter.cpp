@@ -149,7 +149,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
   cvLayer.convertTo(cvLayer, CV_32F);
 
-  cvLayer += 0.1;
+  cvLayer = (1.f - cvLayer) + 0.1f;
 
   // Preallocate output layer
   cv::Mat cvGeodesicDistance(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));

@@ -300,7 +300,7 @@ grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gri
     //     }
     //   }
     // }
-    
+
     double distanceToCenter = (gridMap.getPosition() - attractor).norm();
     for (grid_map::SpiralIterator iterator(gridMap, attractor, distanceToCenter); !iterator.isPastEnd(); ++iterator) {
       if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
