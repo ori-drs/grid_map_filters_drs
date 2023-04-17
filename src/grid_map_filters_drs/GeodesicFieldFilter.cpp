@@ -134,8 +134,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
 
   if (mapFrame_ == "not_set") {
     // Set standard goal at the center
-    attractorPosition_.x() = mapOut.getSize()(0) / 2 * resolution;
-    attractorPosition_.y() = mapOut.getSize()(1) / 2 * resolution;
+    mapOut.getPosition();
   }
 
   // Get frame of elevation map
@@ -186,8 +185,8 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
     cv::sqrt(sqGradientsX + sqGradientsY, normNormal);
 
     // Normalize
-    cvGradientsX /= normNormal;
-    cvGradientsY /= normNormal;
+    cvGradientsX /= (normNormal + std::numeric_limits<float>::epsilon());
+    cvGradientsY /= (normNormal + std::numeric_limits<float>::epsilon());
   }
 
   // Add layers
@@ -221,28 +220,6 @@ grid_map::Index GeodesicFieldFilter<T>::getAttractorIndex(const T& gridMap, cons
   index.y() = std::min(index.y(), gridMap.getSize().y() - 1);
   index.x() = std::max(index.x(), 0);
   index.y() = std::max(index.y(), 0);
-
-  // // ROS_WARN_STREAM("attractor closest index: " << index(0) << ", " << index(1));
-  // bool traversable = gridMap.at(freeSpaceLayer_, index) > 0;
-  // // ROS_WARN_STREAM("attractor traversable? " << traversable);
-
-  // // If not traversable, we need to find a new candidate attractor
-  // if(!traversable) {
-  //   double radius = gridMap.getSize()(0) * gridMap.getResolution(); // meters
-
-  //   for (grid_map::SpiralIterator iterator(gridMap, closestAttractor, radius); !iterator.isPastEnd(); ++iterator) {
-  //     if(gridMap.isValid(*iterator, freeSpaceLayer_)) {
-  //       grid_map::Index closestIndex = *iterator;
-  //       if(gridMap.at(freeSpaceLayer_, closestIndex) > 0) {
-  //         index = closestIndex;
-  //         // ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
-  //         break;
-  //       }
-  //     }
-  //   }
-  // }
-  // ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
-  // cv::waitKey(10);
 
   return index;
 }

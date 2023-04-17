@@ -3,8 +3,7 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Traversability1
+      Expanded: ~
       Splitter Ratio: 0.6114649772644043
     Tree Height: 797
   - Class: rviz/Selection
@@ -114,7 +113,7 @@ Visualization Manager:
       Color Layer: traversability
       Color Transformer: ""
       ColorMap: coolwarm
-      Enabled: true
+      Enabled: false
       Grid Cell Decimation: 1
       Grid Line Thickness: 0.10000000149011612
       Height Layer: elevation_inpainted
@@ -130,7 +129,7 @@ Visualization Manager:
       Topic: /grid_map_filter_demo/filtered_map
       Unreliable: false
       Use ColorMap: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Class: grid_map_rviz_plugin/GridMap
@@ -265,7 +264,7 @@ Visualization Manager:
       Enabled: true
       Grid Cell Decimation: 1
       Grid Line Thickness: 0.10000000149011612
-      Height Layer: geodesic_field
+      Height Layer: elevation_inpainted
       Height Transformer: Layer
       History Length: 1
       Invert ColorMap: true
@@ -280,13 +279,13 @@ Visualization Manager:
       Use ColorMap: true
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /grid_map_visualization/geodesic_field_gradient
       Name: Geodesic Field Gradient
       Namespaces:
-        {}
+        vector: true
       Queue Size: 100
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 46; 52; 54
@@ -331,9 +330,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7847957015037537
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 1.2049490213394165
+      Yaw: 1.5699564218521118
     Saved: ~
 Window Geometry:
   Displays:

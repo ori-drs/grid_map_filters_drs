@@ -125,6 +125,24 @@ grid_map_filters:
     params:
       output_layer: traversability
       expression: (0.5 * (1.0 - (slope / 0.6)) + 0.5 * height_traversability) .* (1.0 - unknown_space)
+  
+  # - name: traversability_booster
+  #   type: gridMapFilters/MathExpressionFilter
+  #   params:
+  #     output_layer: traversability
+  #     expression: traversability^2
+  
+  # Inflate traversability
+  - name: inflate_traversability
+    type: gridMapFilters/SlidingWindowMathExpressionFilter
+    params:
+      input_layer: traversability
+      output_layer: traversability
+      expression: meanOfFinites(traversability^2) #minOfFinites(traversability)
+      compute_empty_cells: false
+      edge_handling: empty # options: inside, crop, empty, mean
+      # window_size: 5 # in number of cells (optional, default: 3), make sure to make this compatible with the kernel matrix
+      window_length: 0.4 # instead of window_size, in m
          
   # Compute 2D Signed Distance Field
   - name: sdf
