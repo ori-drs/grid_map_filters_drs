@@ -134,7 +134,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
 
   if (mapFrame_ == "not_set") {
     // Set standard goal at the center
-    mapOut.getPosition();
+    attractorPosition_ = mapOut.getPosition();
   }
 
   // Get frame of elevation map
@@ -148,7 +148,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
   cvLayer.convertTo(cvLayer, CV_32F);
 
-  cvLayer = (1.f - cvLayer) + 0.1f;
+  cvLayer = (1.f - cvLayer) + 1.0f;
 
   // Preallocate output layer
   cv::Mat cvGeodesicDistance(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
