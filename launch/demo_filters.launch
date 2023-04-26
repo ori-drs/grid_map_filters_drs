@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find grid_map_filters_drs)/launch/filter_chain.launch" output="screen">
+  <include file="$(find grid_map_filters_drs)/launch/filter_chain.launch">
     <arg name="input_topic"           value="/image_to_gridmap_demo/grid_map"/>
     <arg name="output_topic"          value="/grid_map_filter_demo/filtered_map"/>
     <arg name="viz"                   value="true"/>

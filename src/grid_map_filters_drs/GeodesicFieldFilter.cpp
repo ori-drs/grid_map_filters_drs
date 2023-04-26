@@ -56,11 +56,30 @@ bool GeodesicFieldFilter<T>::configure() {
   }
   ROS_DEBUG("SDF 2D filter normalize_gradients = %s.", (normalizeGradients_ ? "true" : "false"));
 
+  // Read option to publish path
+  if (!filters::FilterBase<T>::getParam(std::string("publish_path"), publishPath_)) {
+    ROS_ERROR("SDF 2D filter did not find parameter `publish_path`.");
+    return false;
+  }
+  ROS_DEBUG("SDF 2D filter publish_path = %s.", (publishPath_ ? "true" : "false"));
+
+  // Attractor subscriber topic
+  if (!FilterBase<T>::getParam(std::string("path_topic"), pathTopic_)) {
+    ROS_ERROR("Geodesic Distance 2D filter did not find parameter 'path_topic'.");
+    return false;
+  }
+  ROS_DEBUG("Geodesic Distance 2D filter path_topic = %s.", pathTopic_.c_str());
+
   // Initialize TF listener
   tfListener_ = std::make_shared<tf::TransformListener>();
 
   // Initialize subscriber
   attractorSubscriber_ = nodeHandle_.subscribe(std::string(attractorTopic_), 1, &GeodesicFieldFilter::attractorCallback, this);
+
+  // Initialize path publisher
+  if (publishPath_) {
+    pathPublisher_ = nodeHandle_.advertise<nav_msgs::Path>(std::string(pathTopic_), 10);
+  }
 
   // Initialize output layer variables
   obstacleLayer_ = outputLayer_ + "_obstacle_space";
@@ -195,7 +214,40 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   addMatAsLayer(cvGradientsY, gradientYLayer_, mapOut);
   addMatAsLayer(cvGradientsZ, gradientZLayer_, mapOut);
 
+  // Fix gradients
+  mapOut.at(gradientXLayer_, index) = 0.0;
+  mapOut.at(gradientYLayer_, index) = 0.0;
+  mapOut.at(gradientZLayer_, index) = 1.0;
+
   mapOut.setBasicLayers({});
+
+  // Publish path
+  if (publishPath_) {
+    double stepSize = mapOut.getResolution();  // in meters
+
+    // Integrate the vector field from the starting position
+    grid_map::Position start = mapOut.getPosition();
+    // Get gradient
+    double dx = mapOut.atPosition(gradientXLayer_, start);
+    double dy = mapOut.atPosition(gradientYLayer_, start);
+
+    nav_msgs::Path path;
+    path.header.frame_id = mapFrame_;
+    path.header.stamp = ros::Time::now();
+
+    while (std::hypot(dx, dy) > 0.1 && ros::ok()) {
+      start += grid_map::Position(dx * stepSize, dy * stepSize);
+      dx = mapOut.atPosition(gradientXLayer_, start);
+      dy = mapOut.atPosition(gradientYLayer_, start);
+
+      geometry_msgs::PoseStamped pose;
+      pose.pose.position.x = start.x();
+      pose.pose.position.y = start.y();
+      pose.pose.orientation.w = 1.0;
+      path.poses.push_back(pose);
+    }
+    pathPublisher_.publish(path);
+  }
 
   // Timing
   profiler_ptr_->endEvent("0.update");
