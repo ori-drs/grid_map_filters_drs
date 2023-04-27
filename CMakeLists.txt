@@ -82,11 +82,13 @@ include_directories(
 set(FILTERS_SRC src/grid_map_filters_drs/BaseHeightThresholdFilter.cpp
                 src/grid_map_filters_drs/ChangeNormalsFrameFilter.cpp
                 src/grid_map_filters_drs/DeleteAllButFilter.cpp
+                src/grid_map_filters_drs/DenoiseFilter.cpp
                 src/grid_map_filters_drs/DenoiseAndInpaintFilter.cpp
                 src/grid_map_filters_drs/FastNormalsVectorFilter.cpp
                 src/grid_map_filters_drs/FootprintMaskFilter.cpp
                 src/grid_map_filters_drs/GeodesicDistanceField2dFilter.cpp
                 src/grid_map_filters_drs/GeodesicFieldFilter.cpp
+                src/grid_map_filters_drs/InpaintFilter.cpp
                 src/grid_map_filters_drs/NanFillerFilter.cpp
                 src/grid_map_filters_drs/NanMaskFilter.cpp
                 src/grid_map_filters_drs/RadialInpaintFilter.cpp

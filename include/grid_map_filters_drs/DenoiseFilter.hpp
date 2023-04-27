@@ -1,9 +1,8 @@
 /*
- * DenoiseAndInpaintFilter.cpp
+ * DenoiseFilter.cpp
  *
- *  Based on original InpaintFilter
- *  by Tanja Baumann, Peter Fankhauser (ETH Zurich, ANYbotics)
- *
+ * Applies denoising algorithms (smoothing), such as Gaussian, Median, Total Variation, Bilateral
+ * 
  *  Author: Matias Mattamala
  */
 
@@ -25,19 +24,18 @@ namespace grid_map {
  * Uses OpenCV function to inpaint/fill holes in the input layer.
  * It also enables to prefilter the image before inpainting
  */
-
 template <typename T>
-class DenoiseAndInpaintFilter : public filters::FilterBase<T> {
+class DenoiseFilter : public filters::FilterBase<T> {
  public:
   /*!
    * Constructor
    */
-  DenoiseAndInpaintFilter();
+  DenoiseFilter();
 
   /*!
    * Destructor.
    */
-  virtual ~DenoiseAndInpaintFilter();
+  virtual ~DenoiseFilter();
 
   /*!
    * Configures the filter from parameters on the Parameter Server
@@ -60,20 +58,11 @@ class DenoiseAndInpaintFilter : public filters::FilterBase<T> {
   //! Output layer name.
   std::string outputLayer_;
 
-  //! Inpainting radius.
+  //! Denoising radius
   double radius_;
 
-  //! Inpainting type
-  std::string inpaintingType_;
-
-  //! Aply denoising
-  bool applyDenoising_;
-
-  //! Denoising radius
-  double denoisingRadius_;
-
   //! Denoising type
-  std::string denoisingType_;
+  std::string type_;
 
   //! Total variation parameters
   double totalVariationLambda_;

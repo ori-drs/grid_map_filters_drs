@@ -130,6 +130,7 @@ bool DenoiseAndInpaintFilter<T>::configure() {
 
 template <typename T>
 bool DenoiseAndInpaintFilter<T>::update(const T& mapIn, T& mapOut) {
+  ROS_WARN_ONCE("DenoiseAndInpaintFilter is deprecated. Use DenoiseFilter or InpaintFilter instead. This message will print once.");
   profiler_ptr_->startEvent("0.update");
 
   // Add new layer to the elevation map.
