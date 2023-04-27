@@ -241,6 +241,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
       geometry_msgs::PoseStamped pose;
       pose.pose.position.x = start.x();
       pose.pose.position.y = start.y();
+      pose.pose.position.z = 0.5;
       pose.pose.orientation.w = 1.0;
       path.poses.push_back(pose);
     }

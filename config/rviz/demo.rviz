@@ -5,7 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded: ~
       Splitter Ratio: 0.6114649772644043
-    Tree Height: 892
+    Tree Height: 865
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -58,7 +58,7 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Show Trail: false
       Value: false
-    - Alpha: 1
+    - Alpha: 0.8999999761581421
       Autocompute Intensity Bounds: true
       Class: grid_map_rviz_plugin/GridMap
       Color: 200; 200; 200
@@ -155,30 +155,6 @@ Visualization Manager:
       Use ColorMap: true
       Value: false
     - Alpha: 1
-      Autocompute Intensity Bounds: false
-      Class: grid_map_rviz_plugin/GridMap
-      Color: 200; 200; 200
-      Color Layer: geodesic
-      Color Transformer: GridMapLayer
-      ColorMap: plasma
-      Enabled: false
-      Grid Cell Decimation: 1
-      Grid Line Thickness: 0.10000000149011612
-      Height Layer: elevation_inpainted
-      Height Transformer: GridMapLayer
-      History Length: 1
-      Invert ColorMap: true
-      Max Color: 255; 255; 255
-      Max Intensity: 10
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: GeodesicDistanceField
-      Show Grid Lines: false
-      Topic: /grid_map_filter_demo/filtered_map
-      Unreliable: false
-      Use ColorMap: true
-      Value: false
-    - Alpha: 1
       Autocompute Intensity Bounds: true
       Class: grid_map_rviz_plugin/GridMap
       Color: 200; 200; 200
@@ -258,12 +234,36 @@ Visualization Manager:
       Autocompute Intensity Bounds: false
       Class: grid_map_rviz_plugin/GridMap
       Color: 200; 200; 200
+      Color Layer: geodesic
+      Color Transformer: GridMapLayer
+      ColorMap: plasma
+      Enabled: true
+      Grid Cell Decimation: 1
+      Grid Line Thickness: 0.10000000149011612
+      Height Layer: elevation_inpainted
+      Height Transformer: GridMapLayer
+      History Length: 1
+      Invert ColorMap: true
+      Max Color: 255; 255; 255
+      Max Intensity: 10
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: GeodesicDistanceField
+      Show Grid Lines: true
+      Topic: /grid_map_filter_demo/filtered_map
+      Unreliable: false
+      Use ColorMap: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: false
+      Class: grid_map_rviz_plugin/GridMap
+      Color: 200; 200; 200
       Color Layer: geodesic_field
       Color Transformer: ""
       ColorMap: plasma
-      Enabled: true
-      Grid Cell Decimation: 10
-      Grid Line Thickness: 1
+      Enabled: false
+      Grid Cell Decimation: 1
+      Grid Line Thickness: 0.20000000298023224
       Height Layer: elevation_inpainted
       Height Transformer: Layer
       History Length: 1
@@ -277,7 +277,31 @@ Visualization Manager:
       Topic: /grid_map_filter_demo/filtered_map
       Unreliable: false
       Use ColorMap: true
-      Value: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: false
+      Class: grid_map_rviz_plugin/GridMap
+      Color: 200; 200; 200
+      Color Layer: geodesic_field
+      Color Transformer: ""
+      ColorMap: plasma
+      Enabled: false
+      Grid Cell Decimation: 1
+      Grid Line Thickness: 0.20000000298023224
+      Height Layer: geodesic_field
+      Height Transformer: Layer
+      History Length: 1
+      Invert ColorMap: true
+      Max Color: 255; 255; 255
+      Max Intensity: 10
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: GeodesicField - Potential
+      Show Grid Lines: true
+      Topic: /grid_map_filter_demo/filtered_map
+      Unreliable: false
+      Use ColorMap: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /grid_map_visualization/geodesic_field_gradient
@@ -290,7 +314,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 20; 225
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -309,7 +333,15 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /geodesic_distance_filter/path
       Unreliable: false
-      Value: true
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /grid_map_visualization/geodesic_gradient
+      Name: Geodesic Gradient
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /grid_map_visualization/normals
@@ -354,7 +386,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 15.197306632995605
+      Distance: 19.94393539428711
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -362,25 +394,25 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.5143126845359802
-        Y: 0.11391904205083847
-        Z: -2.842191457748413
+        X: -0.532985508441925
+        Y: -1.3874157667160034
+        Z: -4.289961338043213
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.729796826839447
+      Pitch: 1.484796404838562
       Target Frame: <Fixed Frame>
-      Yaw: 4.059927940368652
+      Yaw: 4.704939842224121
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1043
+  Height: 1016
   Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a000003b9fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730200000780000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000003b9000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000040efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000000280000040e000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d00650000000000000007800000041800fffffffb0000000800540069006d0065010000000000000450000000000000000000000610000003b900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a0000039efc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000039e000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000040efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000000280000040e000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d00650000000000000007800000041800fffffffb0000000800540069006d00650100000000000004500000000000000000000005c80000039e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -389,6 +421,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 1920
-  X: 0
-  Y: 649
+  Width: 1848
+  X: 72
+  Y: 27
