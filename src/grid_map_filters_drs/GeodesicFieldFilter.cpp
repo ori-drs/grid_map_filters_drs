@@ -222,26 +222,31 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
     double stepSize = mapOut.getResolution();  // in meters
 
     // Integrate the vector field from the starting position
-    grid_map::Position start = mapOut.getPosition();
+    grid_map::Position pos = mapOut.getPosition();
     // Get gradient
-    double dx = mapOut.atPosition(gradientXLayer_, start);
-    double dy = mapOut.atPosition(gradientYLayer_, start);
+    double dx = mapOut.atPosition(gradientXLayer_, pos);
+    double dy = mapOut.atPosition(gradientYLayer_, pos);
 
     nav_msgs::Path path;
     path.header.frame_id = mapFrame_;
     path.header.stamp = ros::Time::now();
 
-    while (std::hypot(dx, dy) > 0.1 && ros::ok()) {
-      start += grid_map::Position(dx * stepSize, dy * stepSize);
-      dx = mapOut.atPosition(gradientXLayer_, start);
-      dy = mapOut.atPosition(gradientYLayer_, start);
+    size_t iter = 0;
+    size_t maxIter = 2 * mapOut.getSize()(0);
+    while (std::hypot(dx, dy) > 0.1 && iter < maxIter && ros::ok()) {
+      pos += grid_map::Position(dx * stepSize, dy * stepSize);
+      dx = mapOut.atPosition(gradientXLayer_, pos);
+      dy = mapOut.atPosition(gradientYLayer_, pos);
+      // std::cout << "(" << iter << "/" << maxIter << ") dx: " << dx << ", dy: " << dy << ", pos.x: " << pos.x() << ", pos.y: " << pos.y()
+                // << std::endl;
 
       geometry_msgs::PoseStamped pose;
-      pose.pose.position.x = start.x();
-      pose.pose.position.y = start.y();
+      pose.pose.position.x = pos.x();
+      pose.pose.position.y = pos.y();
       pose.pose.position.z = 0.5;
       pose.pose.orientation.w = 1.0;
       path.poses.push_back(pose);
+      iter++;
     }
     pathPublisher_.publish(path);
   }

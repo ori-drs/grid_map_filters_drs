@@ -183,16 +183,17 @@ grid_map_filters:
       use_field_smoothing: false
       field_smoothing_radius: 0.05 # m
 
-  # - name: risk_booster
-  #   type: gridMapFilters/MathExpressionFilter
-  #   params:
-  #     output_layer: risk_boosted
-  #     expression: risk_learned^2
+  # Compute cost using traversability
+  - name: traversability_to_cost
+    type: gridMapFilters/MathExpressionFilter
+    params:
+      output_layer: cost
+      expression: 10*(1.0 - traversability) + 1.0
   
   - name: geodesic_field
     type: gridMapFiltersDrs/GeodesicFieldFilter
     params:
-      input_layer: traversability
+      input_layer: cost
       output_layer: geodesic_field
       normalize_gradients: true
       attractor_topic: /initialpose
