@@ -13,6 +13,8 @@
 
 #include <eigen_conversions/eigen_msg.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Path.h>
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 #include <tf/transform_listener.h>
@@ -92,6 +94,10 @@ class GeodesicFieldFilter : public filters::FilterBase<T> {
   //! Attractor topic
   std::string attractorTopic_;
 
+  //! Path publisher
+  bool publishPath_;
+  std::string pathTopic_;
+
   //! Target frame
   std::string attractorFrame_;
   //! Map frame
@@ -113,6 +119,9 @@ class GeodesicFieldFilter : public filters::FilterBase<T> {
   ros::Subscriber attractorSubscriber_;
   ros::Subscriber attractorSubscriberRviz_;
   ros::Subscriber attractorSubscriberRviz2_;
+
+  //! Path publisher
+  ros::Publisher pathPublisher_;
 
   //! Profiler
   std::shared_ptr<Profiler> profiler_ptr_;

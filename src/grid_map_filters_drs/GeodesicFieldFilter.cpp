@@ -56,11 +56,30 @@ bool GeodesicFieldFilter<T>::configure() {
   }
   ROS_DEBUG("SDF 2D filter normalize_gradients = %s.", (normalizeGradients_ ? "true" : "false"));
 
+  // Read option to publish path
+  if (!filters::FilterBase<T>::getParam(std::string("publish_path"), publishPath_)) {
+    ROS_ERROR("SDF 2D filter did not find parameter `publish_path`.");
+    return false;
+  }
+  ROS_DEBUG("SDF 2D filter publish_path = %s.", (publishPath_ ? "true" : "false"));
+
+  // Attractor subscriber topic
+  if (!FilterBase<T>::getParam(std::string("path_topic"), pathTopic_)) {
+    ROS_ERROR("Geodesic Distance 2D filter did not find parameter 'path_topic'.");
+    return false;
+  }
+  ROS_DEBUG("Geodesic Distance 2D filter path_topic = %s.", pathTopic_.c_str());
+
   // Initialize TF listener
   tfListener_ = std::make_shared<tf::TransformListener>();
 
   // Initialize subscriber
   attractorSubscriber_ = nodeHandle_.subscribe(std::string(attractorTopic_), 1, &GeodesicFieldFilter::attractorCallback, this);
+
+  // Initialize path publisher
+  if (publishPath_) {
+    pathPublisher_ = nodeHandle_.advertise<nav_msgs::Path>(std::string(pathTopic_), 10);
+  }
 
   // Initialize output layer variables
   obstacleLayer_ = outputLayer_ + "_obstacle_space";
@@ -134,8 +153,7 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
 
   if (mapFrame_ == "not_set") {
     // Set standard goal at the center
-    attractorPosition_.x() = mapOut.getSize()(0) / 2 * resolution;
-    attractorPosition_.y() = mapOut.getSize()(1) / 2 * resolution;
+    attractorPosition_ = mapOut.getPosition();
   }
 
   // Get frame of elevation map
@@ -149,14 +167,10 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   cv::normalize(cvLayer, cvLayer, minValue, maxValue, cv::NORM_MINMAX);
   cvLayer.convertTo(cvLayer, CV_32F);
 
-  cvLayer += 0.1;
-
   // Preallocate output layer
   cv::Mat cvGeodesicDistance(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
   cv::Mat cvGradientsX(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
-  ;
   cv::Mat cvGradientsY(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
-  ;
   cv::Mat cvGradientsZ(cvLayer.size(), cvLayer.type(), cv::Scalar(0.0));
 
   // Prepare seeds
@@ -186,8 +200,8 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
     cv::sqrt(sqGradientsX + sqGradientsY, normNormal);
 
     // Normalize
-    cvGradientsX /= normNormal;
-    cvGradientsY /= normNormal;
+    cvGradientsX /= (normNormal + std::numeric_limits<float>::epsilon());
+    cvGradientsY /= (normNormal + std::numeric_limits<float>::epsilon());
   }
 
   // Add layers
@@ -196,7 +210,41 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
   addMatAsLayer(cvGradientsY, gradientYLayer_, mapOut);
   addMatAsLayer(cvGradientsZ, gradientZLayer_, mapOut);
 
+  // Fix gradients
+  mapOut.at(gradientXLayer_, index) = 0.0;
+  mapOut.at(gradientYLayer_, index) = 0.0;
+  mapOut.at(gradientZLayer_, index) = 1.0;
+
   mapOut.setBasicLayers({});
+
+  // Publish path
+  if (publishPath_) {
+    double stepSize = mapOut.getResolution();  // in meters
+
+    // Integrate the vector field from the starting position
+    grid_map::Position start = mapOut.getPosition();
+    // Get gradient
+    double dx = mapOut.atPosition(gradientXLayer_, start);
+    double dy = mapOut.atPosition(gradientYLayer_, start);
+
+    nav_msgs::Path path;
+    path.header.frame_id = mapFrame_;
+    path.header.stamp = ros::Time::now();
+
+    while (std::hypot(dx, dy) > 0.1 && ros::ok()) {
+      start += grid_map::Position(dx * stepSize, dy * stepSize);
+      dx = mapOut.atPosition(gradientXLayer_, start);
+      dy = mapOut.atPosition(gradientYLayer_, start);
+
+      geometry_msgs::PoseStamped pose;
+      pose.pose.position.x = start.x();
+      pose.pose.position.y = start.y();
+      pose.pose.position.z = 0.5;
+      pose.pose.orientation.w = 1.0;
+      path.poses.push_back(pose);
+    }
+    pathPublisher_.publish(path);
+  }
 
   // Timing
   profiler_ptr_->endEvent("0.update");
@@ -221,28 +269,6 @@ grid_map::Index GeodesicFieldFilter<T>::getAttractorIndex(const T& gridMap, cons
   index.y() = std::min(index.y(), gridMap.getSize().y() - 1);
   index.x() = std::max(index.x(), 0);
   index.y() = std::max(index.y(), 0);
-
-  // // ROS_WARN_STREAM("attractor closest index: " << index(0) << ", " << index(1));
-  // bool traversable = gridMap.at(freeSpaceLayer_, index) > 0;
-  // // ROS_WARN_STREAM("attractor traversable? " << traversable);
-
-  // // If not traversable, we need to find a new candidate attractor
-  // if(!traversable) {
-  //   double radius = gridMap.getSize()(0) * gridMap.getResolution(); // meters
-
-  //   for (grid_map::SpiralIterator iterator(gridMap, closestAttractor, radius); !iterator.isPastEnd(); ++iterator) {
-  //     if(gridMap.isValid(*iterator, freeSpaceLayer_)) {
-  //       grid_map::Index closestIndex = *iterator;
-  //       if(gridMap.at(freeSpaceLayer_, closestIndex) > 0) {
-  //         index = closestIndex;
-  //         // ROS_WARN_STREAM("attractor spiral index: " << index(0) << ", " << index(1));
-  //         break;
-  //       }
-  //     }
-  //   }
-  // }
-  // ROS_WARN_STREAM("attractor final index: " << index(0) << ", " << index(1));
-  // cv::waitKey(10);
 
   return index;
 }

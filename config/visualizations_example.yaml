@@ -1,20 +1,30 @@
 grid_map_visualizations:
+
   - name: sdf_gradient
     type: vectors
     params:
       layer_prefix: sdf_gradient_
-      position_layer: elevation
-      scale: 0.05
-      line_width: 0.009
+      position_layer: elevation_inpainted
+      scale: 0.02
+      line_width: 0.005
       color: 16119285 # cultured https://www.2020colours.com/f5f5f5
   
   - name: geodesic_gradient
     type: vectors
     params:
       layer_prefix: geodesic_gradient_
-      position_layer: elevation
-      scale: 0.05
-      line_width: 0.009
+      position_layer: elevation_inpainted
+      scale: 0.02
+      line_width: 0.005
+      color: 16119285 # cultured https://www.2020colours.com/f5f5f5
+  
+  - name: geodesic_field_gradient
+    type: vectors
+    params:
+      layer_prefix: geodesic_field_gradient_
+      position_layer: elevation_inpainted
+      scale: 0.02
+      line_width: 0.005
       color: 16119285 # cultured https://www.2020colours.com/f5f5f5
   
   # - name: rotated_normals
@@ -32,5 +42,5 @@ grid_map_visualizations:
       layer_prefix: normal_
       position_layer: elevation
       scale: 0.02
-      line_width: 0.002
+      line_width: 0.005
       color: 6711039 # very light blue https://www.2020colours.com/6666ff

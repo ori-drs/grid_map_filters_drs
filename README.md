@@ -40,24 +40,26 @@ Deletes all the layers **except** the ones specified in `layers`.
     params:
       layers: [elevation, traversability] # List of layers.
 ```
-It will remove all the alyers in the grid map and will just keep `elevation` and `traversability`.
-### Denoise and Inpaint
-It applies inpainting using OpenCV algorithms. Since the inpainting converts the grid map to an image, it also allows to apply denoising methods before inpainting to mitigate spikes or other artifacts.
+It will remove all the layers in the grid map and will just keep `elevation` and `traversability`.
+
+### Denoise
+It applies denoising OpenCV algorithms.
 
 ```yaml
-- name: denoise_inpaint
-  type: gridMapFiltersDrs/DenoiseAndInpaintFilter
+- name: denoise
+  type: gridMapFiltersDrs/DenoiseFilter
   params:
     input_layer: elevation
-    output_layer: elevation_inpainted
-    radius: 0.1 # in m
-    inpainting_type: ns # 'ns' or 'telea' allowed
-    pre_denoising: false # enables denoising before inpainting
-    denoising_radius: 0.15 # m
-    denoising_type: total_variation # 'total_variation', 'non_local', 'gaussian', and 'median' supported
+    output_layer: elevation_denoised
+    radius: 0.5 # m
+    type: non_local # 'total_variation', 'non_local', 'gaussian', and 'median' supported
+    total_variation_lambda: 1.0
+    total_variation_iters: 30
+    non_local_strength: 30.0
+    non_local_search_window: 21
+    bilateral_window_size: 20
 ```
-[Supported algorithms for denoising](https://docs.opencv.org/4.2.0/df/d3d/tutorial_py_inpainting.html) are Navier-Stokes (`ns`) or Telea's method (`telea`).
-Denoising supports Gaussian (`gaussian`) or median (`median`) filters, as well as Non-local means denoising (`non_local`) or total variation (`total_variation`).
+The filter supports Gaussian (`gaussian`) or median (`median`) filters, as well as Non-local means denoising (`non_local`) or total variation (`total_variation`).
 
 ### Fast Normals
 In contrast to the normals computation method available in the `grid_map` package, here we adopt a simpler approach assuming that normals always point in the Z axis, and we use computer vision techniques to compute the derivatives (with Sobel operators). It also allows to do some pre filtering to tthe input layer, and post filtering to the normal layers.
@@ -115,6 +117,20 @@ It also provides the gradients in X and Y as separate layers (in the example bel
     threshold: 0.5 # Only applicable when using binarization
     use_binarization: true
 ```
+
+### Inpaint
+It applies inpainting using OpenCV algorithms. It's the same as `gridMapCv/InpaintFilter` but adding a `type` option
+
+```yaml
+- name: denoise_inpaint
+  type: gridMapFiltersDrs/DenoiseAndInpaintFilter
+  params:
+    input_layer: elevation
+    output_layer: elevation_inpainted
+    radius: 0.1 # in m
+    type: ns # 'ns' or 'telea' allowed
+```
+The [supported algorithms for inpainting](https://docs.opencv.org/4.2.0/df/d3d/tutorial_py_inpainting.html) are Navier-Stokes (`ns`) and Telea's method (`telea`).
 
 ### Learned Motion Costs
 Generates motion costs (risk, energy, time) based on the method by [Yang et al. (2021)](https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/491442/yang2021icra.pdf?sequence=1). It requires the `gpu_path_optimizer` package to execute a service call given by `service_name`.

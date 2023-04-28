@@ -10,26 +10,45 @@ grid_map_filters:
       input_layer: elevation
       output_layer: unknown_space
 
-  # Inpainting
-  - name: inpainting
-    type: gridMapCv/InpaintFilter
-    params:
-      input_layer: elevation
-      output_layer: elevation_inpainted_original
-      radius: 0.1 # in m
-  
-    # Inpainting
+  # # Inpainting
+  # - name: original_inpainting
+  #   type: gridMapCv/InpaintFilter
+  #   params:
+  #     input_layer: elevation
+  #     output_layer: elevation_inpainted_original
+  #     radius: 0.1 # in m
+
+  # Denoising
   - name: denoise_inpaint
     type: gridMapFiltersDrs/DenoiseAndInpaintFilter
     params:
       input_layer: elevation
+      output_layer: elevation_denoised_inpainted
+      radius: 0.1 # in m
+      type: telea # 'ns' or 'telea' allowed
+  
+  # Denoising
+  - name: denoise
+    type: gridMapFiltersDrs/DenoiseFilter
+    params:
+      input_layer: elevation
+      output_layer: elevation_denoised
+      radius: 0.5 # m
+      type: non_local # 'total_variation', 'non_local', 'gaussian', and 'median' supported
+      total_variation_lambda: 1.0
+      total_variation_iters: 30
+      non_local_strength: 30.0
+      non_local_search_window: 21
+      bilateral_window_size: 20
+  
+  # Custom inpainting
+  - name: inpainting
+    type: gridMapFiltersDrs/InpaintFilter
+    params:
+      input_layer: elevation_denoised
       output_layer: elevation_inpainted
       radius: 0.1 # in m
-      inpainting_type: telea # 'ns' or 'telea' allowed
-      pre_denoising: false # enables denoising before inpainting
-      denoising_radius: 0.5 # m
-      denoising_type: non_local # 'total_variation', 'non_local', 'gaussian', and 'median' supported
-      total_variation_lambda: 1.0
+      type: telea # 'ns' or 'telea' allowed
 
   # - name: learned_risk
   #   type: gridMapFiltersDrs/LearnedMotionCostsFilter
@@ -124,25 +143,31 @@ grid_map_filters:
     type: gridMapFilters/MathExpressionFilter
     params:
       output_layer: traversability
-      expression: (1.0 - (slope / 0.6))
-      # expression: (0.5 * (1.0 - (slope / 0.6)) + 0.5 * height_traversability) .* (1.0 - unknown_space)
-      
-  - name: math_traversability
+      expression: (0.5 * (1.0 - (slope / 0.6)) + 0.5 * height_traversability) .* (1.0 - unknown_space)
+  
+  # - name: traversability_booster
+  #   type: gridMapFilters/MathExpressionFilter
+  #   params:
+  #     output_layer: traversability
+  #     expression: traversability^2
+  
+  # Inflate traversability
+  - name: inflate_traversability
     type: gridMapFilters/SlidingWindowMathExpressionFilter
     params:
       input_layer: traversability
-      output_layer: traversability_dilated
-      expression: minOfFinites(traversability)
+      output_layer: traversability
+      expression: minOfFinites(traversability) #minOfFinites(traversability)
       compute_empty_cells: false
-      edge_handling: crop # options: inside, crop, empty, mean
-      window_size: 5 # in number of cells (optional, default: 3), make sure to make this compatible with the kernel matrix
-    # window_length: 0.05 # instead of window_size, in m
-       
+      edge_handling: empty # options: inside, crop, empty, mean
+      # window_size: 5 # in number of cells (optional, default: 3), make sure to make this compatible with the kernel matrix
+      window_length: 0.4 # instead of window_size, in m
+         
   # Compute 2D Signed Distance Field
   - name: sdf
     type: gridMapFiltersDrs/SignedDistanceField2dFilter
     params:
-      input_layer: traversability_geometric
+      input_layer: traversability
       output_layer: sdf
       normalize_gradients: true
       threshold: 0.2
@@ -150,7 +175,7 @@ grid_map_filters:
   - name: geodesic
     type: gridMapFiltersDrs/GeodesicDistanceField2dFilter
     params:
-      input_layer: traversability_geometric
+      input_layer: traversability
       output_layer: geodesic
       normalize_gradients: true
       attractor_topic: /initialpose
@@ -167,11 +192,12 @@ grid_map_filters:
   - name: geodesic_field
     type: gridMapFiltersDrs/GeodesicFieldFilter
     params:
-      input_layer: traversability_geometric
+      input_layer: traversability
       output_layer: geodesic_field
       normalize_gradients: true
       attractor_topic: /initialpose
-      field_smoothing_radius: 0.5
+      publish_path: true
+      path_topic: /geodesic_distance_filter/path
   
   - name: footprint_mask
     type: gridMapFiltersDrs/FootprintMaskFilter

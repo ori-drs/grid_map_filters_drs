@@ -59,34 +59,34 @@ bool RadialInpaintFilter<T>::configure() {
   // Apply denoising flag
   applyDenoising_ = false;
   if (!FilterBase<T>::getParam(std::string("pre_denoising"), applyDenoising_)) {
-    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `pre_denoising`. Using default %s", (applyDenoising_ ? "true" : "false"));
+    ROS_WARN("[RadialInpaintFilter] did not find parameter `pre_denoising`. Using default %s", (applyDenoising_ ? "true" : "false"));
   }
-  ROS_DEBUG("[DenoiseAndInpaintFilter] pre_denoising = %s.", (applyDenoising_ ? "true" : "false"));
+  ROS_DEBUG("[RadialInpaintFilter] pre_denoising = %s.", (applyDenoising_ ? "true" : "false"));
 
   // Denoising radius
   denoisingRadius_ = 0.1;
   if (!FilterBase<T>::getParam(std::string("denoising_radius"), denoisingRadius_)) {
-    ROS_WARN("[DenoiseAndInpaintFilter] filter did not find param denoising_radius. Using default %f", denoisingRadius_);
+    ROS_WARN("[RadialInpaintFilter] filter did not find param denoising_radius. Using default %f", denoisingRadius_);
   }
   if (denoisingRadius_ < 0.0) {
-    ROS_ERROR("[DenoiseAndInpaintFilter] denoising_radius must be greater than zero.");
+    ROS_ERROR("[RadialInpaintFilter] denoising_radius must be greater than zero.");
     return false;
   }
-  ROS_DEBUG("[DenoiseAndInpaintFilter] denoising_radius = %f.", denoisingRadius_);
+  ROS_DEBUG("[RadialInpaintFilter] denoising_radius = %f.", denoisingRadius_);
 
   // Non local strength
   nonLocalStrength_ = 30;
   if (!FilterBase<T>::getParam(std::string("non_local_strength"), nonLocalStrength_)) {
-    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `non_local_strength`. Using default %f", nonLocalStrength_);
+    ROS_WARN("[RadialInpaintFilter] did not find parameter `non_local_strength`. Using default %f", nonLocalStrength_);
   }
-  ROS_DEBUG("[DenoiseAndInpaintFilter] non_local_strength = %f.", nonLocalStrength_);
+  ROS_DEBUG("[RadialInpaintFilter] non_local_strength = %f.", nonLocalStrength_);
 
   // Non local search window size
   nonLocalSearchWindowSize_ = 21;
   if (!FilterBase<T>::getParam(std::string("non_local_search_window"), nonLocalSearchWindowSize_)) {
-    ROS_WARN("[DenoiseAndInpaintFilter] did not find parameter `non_local_search_window`. Using default %i", nonLocalSearchWindowSize_);
+    ROS_WARN("[RadialInpaintFilter] did not find parameter `non_local_search_window`. Using default %i", nonLocalSearchWindowSize_);
   }
-  ROS_DEBUG("[DenoiseAndInpaintFilter] non_local_search_window = %i.", nonLocalSearchWindowSize_);
+  ROS_DEBUG("[RadialInpaintFilter] non_local_search_window = %i.", nonLocalSearchWindowSize_);
 
   return true;
 }

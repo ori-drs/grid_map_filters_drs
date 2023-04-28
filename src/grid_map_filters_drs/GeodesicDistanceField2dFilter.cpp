@@ -146,7 +146,7 @@ bool GeodesicDistanceField2dFilter<T>::update(const T& mapIn, T& mapOut) {
 
   // Check if layer exists.
   if (!mapOut.exists(inputLayer_)) {
-    ROS_ERROR("Check your threshold types! Type %s does not exist", inputLayer_.c_str());
+    ROS_ERROR("Check your layers! Layer %s does not exist", inputLayer_.c_str());
     return false;
   }
 
@@ -300,7 +300,7 @@ grid_map::Index GeodesicDistanceField2dFilter<T>::getAttractorIndex(const T& gri
     //     }
     //   }
     // }
-    
+
     double distanceToCenter = (gridMap.getPosition() - attractor).norm();
     for (grid_map::SpiralIterator iterator(gridMap, attractor, distanceToCenter); !iterator.isPastEnd(); ++iterator) {
       if (gridMap.isValid(*iterator, freeSpaceLayer_)) {
