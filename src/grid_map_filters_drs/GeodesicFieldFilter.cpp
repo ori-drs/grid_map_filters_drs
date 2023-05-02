@@ -227,6 +227,9 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
     double dx = mapOut.atPosition(gradientXLayer_, pos);
     double dy = mapOut.atPosition(gradientYLayer_, pos);
 
+    std::string elevationLayer = mapOut.exists("elevation_inpainted") ? "elevation_inpainted" : "elevation";
+    double z = mapOut.atPosition(elevationLayer, pos);
+
     nav_msgs::Path path;
     path.header.frame_id = mapFrame_;
     path.header.stamp = ros::Time::now();
@@ -237,13 +240,19 @@ bool GeodesicFieldFilter<T>::update(const T& mapIn, T& mapOut) {
       pos += grid_map::Position(dx * stepSize, dy * stepSize);
       dx = mapOut.atPosition(gradientXLayer_, pos);
       dy = mapOut.atPosition(gradientYLayer_, pos);
+
+      Index index;
+      mapOut.getIndex(pos, index);
+      if (mapOut.isValid(index, elevationLayer)) {
+        z = mapOut.atPosition(elevationLayer, pos);
+      }
       // std::cout << "(" << iter << "/" << maxIter << ") dx: " << dx << ", dy: " << dy << ", pos.x: " << pos.x() << ", pos.y: " << pos.y()
-                // << std::endl;
+      // << std::endl;
 
       geometry_msgs::PoseStamped pose;
       pose.pose.position.x = pos.x();
       pose.pose.position.y = pos.y();
-      pose.pose.position.z = 0.5;
+      pose.pose.position.z = z + 0.5;
       pose.pose.orientation.w = 1.0;
       path.poses.push_back(pose);
       iter++;
