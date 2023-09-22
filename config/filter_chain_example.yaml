@@ -3,6 +3,15 @@ grid_map_filters:
   - name: buffer_normalizer
     type: gridMapFilters/BufferNormalizerFilter
 
+  # # Crop
+  # - name: crop
+  #   type: gridMapFiltersDrs/CropFilter
+  #   params:
+  #     center_x: 0.0
+  #     center_y: 0.0
+  #     length_x: 2.0
+  #     length_y: 2.0
+
   # Unknown space
   - name: nan_mask
     type: gridMapFiltersDrs/NanMaskFilter

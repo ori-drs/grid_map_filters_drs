@@ -81,6 +81,7 @@ include_directories(
 # Files
 set(FILTERS_SRC src/grid_map_filters_drs/BaseHeightThresholdFilter.cpp
                 src/grid_map_filters_drs/ChangeNormalsFrameFilter.cpp
+                src/grid_map_filters_drs/CropFilter.cpp
                 src/grid_map_filters_drs/DeleteAllButFilter.cpp
                 src/grid_map_filters_drs/DenoiseFilter.cpp
                 src/grid_map_filters_drs/DenoiseAndInpaintFilter.cpp
