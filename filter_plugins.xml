@@ -84,5 +84,13 @@
       </description>
     </class>
 
+
+    <class name="gridMapFiltersDrs/StepHeightInRadiusFilter" type="grid_map::StepHeightInRadiusFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Computes the step height 
+      </description>
+    </class>
+
+
   </library>
 </class_libraries>
