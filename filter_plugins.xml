@@ -92,5 +92,11 @@
     </class>
 
 
+    <class name="gridMapFiltersDrs/TruncateElevationFilter" type="grid_map::TruncateElevationFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Truncate elevation values within a range
+      </description>
+    </class>
+
   </library>
 </class_libraries>

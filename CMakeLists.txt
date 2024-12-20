@@ -92,6 +92,7 @@ set(FILTERS_SRC src/grid_map_filters_drs/BaseHeightThresholdFilter.cpp
                 src/grid_map_filters_drs/RadialInpaintFilter.cpp
                 src/grid_map_filters_drs/SignedDistanceField2dFilter.cpp
                 src/grid_map_filters_drs/StepHeightInRadiusFilter.cpp
+                src/grid_map_filters_drs/TruncateElevationFilter.cpp
 )
 
 set(UTILS_SRC src/grid_map_filters_drs/utils/timer.cpp
