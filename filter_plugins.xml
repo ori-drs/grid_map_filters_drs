@@ -98,5 +98,11 @@
       </description>
     </class>
 
+    <class name="gridMapFiltersDrs/HeightBandColorFilter" type="grid_map::HeightBandColorFilter<grid_map::GridMap>" base_class_type="filters::FilterBase<grid_map::GridMap>" >
+      <description>
+        Set color band within a height range
+      </description>
+    </class>
+
   </library>
 </class_libraries>
