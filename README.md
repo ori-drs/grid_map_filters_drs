@@ -133,7 +133,7 @@ It applies inpainting using OpenCV algorithms. It's the same as `gridMapCv/Inpai
 The [supported algorithms for inpainting](https://docs.opencv.org/4.2.0/df/d3d/tutorial_py_inpainting.html) are Navier-Stokes (`ns`) and Telea's method (`telea`).
 
 ### Learned Motion Costs
-Generates motion costs (risk, energy, time) based on the method by [Yang et al. (2021)](https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/491442/yang2021icra.pdf?sequence=1). It requires the `gpu_path_optimizer` package to execute a service call given by `service_name`.
+Generates motion costs (risk, energy, time) based on the method by [Yang et al. (2021)](https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/491442/yang2021icra.pdf?sequence=1). It requires the `gpu_path_optimizer` package to execute a service call given by `service_name` (not available by default).
 
 ```yaml
 - name: learned_risk
@@ -180,4 +180,22 @@ Computes a 2D signed distance field from a [0,1] layer, similarly to the GDF. It
     output_layer: sdf
     normalize_gradients: true
     threshold: 0.5 # lower thresholds are more relaxed
+```
+
+## Citing
+If you use this repository in academic work, please cite:
+
+> M. Mattamala, N. Chebrolu and M. Fallon, "An Efficient Locally Reactive Controller for Safe Navigation in Visual Teach and Repeat Missions," in IEEE Robotics and Automation Letters, vol. 7, no. 2, pp. 2353-2360, April 2022, doi: 10.1109/LRA.2022.3143196.
+
+
+```bibtex
+@ARTICLE{Mattamala2022,
+  author={Mattamala, Matias and Chebrolu, Nived and Fallon, Maurice},
+  journal={IEEE Robotics and Automation Letters}, 
+  title={An Efficient Locally Reactive Controller for Safe Navigation in Visual Teach and Repeat Missions}, 
+  year={2022},
+  volume={7},
+  number={2},
+  pages={2353-2360},
+  doi={10.1109/LRA.2022.3143196}}
 ```
