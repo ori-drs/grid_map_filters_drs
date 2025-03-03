@@ -1,7 +1,16 @@
-# grid_map_filters_drs
-Custom grid map filters for DRS use, so we can easily setup stuff using filter chains.
+# Grid Map Filters DRS
+
+Custom grid map filters for DRS use, so we can easily integrate them using filter chains.
 
 The package includes the filters in [`src/grid_map_filters_drs`](src/grid_map_filters_drs) and a simple node to load a filter chain [`elevation_map_filter`](src/elevation_map_filter/elevation_map_filter.cpp).
+
+
+Demo code is also provided to showcase their use: 
+```sh
+roslaunch grid_map_filters_drs demo_filters.launch
+```
+
+**This package only supports ROS1**
 
 ## Filters
 
